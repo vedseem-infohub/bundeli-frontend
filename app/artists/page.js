@@ -1,21 +1,35 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { artists } from "@/data/artists";
+import { artists as staticArtists } from "@/data/artists";
+import { api } from "@/lib/api";
 import { Search, MapPin, Award, Palette, ArrowRight, ChevronRight } from "lucide-react";
 
 export default function ArtistsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("all");
+  const [artistsList, setArtistsList] = useState(staticArtists);
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getArtists().then((backendList) => {
+      if (isMounted && backendList && backendList.length > 0) {
+        setArtistsList(backendList);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const regions = ["all", "Bundelkhand", "Central India"];
 
-  const filteredArtists = artists.filter((artist) => {
+  const filteredArtists = artistsList.filter((artist) => {
     const matchesSearch =
-      artist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      artist.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      artist.style.toLowerCase().includes(searchTerm.toLowerCase());
+      (artist.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (artist.location || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (artist.style || "").toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesRegion =
       selectedRegion === "all" || artist.region === selectedRegion;
@@ -85,7 +99,7 @@ export default function ArtistsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredArtists.map((artist) => (
             <div
-              key={artist.id}
+              key={artist._id || artist.id || artist.slug}
               className="group flex flex-col bg-[#F4EFE6] border border-[#B89555]/25 hover:border-[#682C2C] rounded-sm overflow-hidden shadow-art hover:shadow-art-hover transition-all duration-300 p-6 justify-between"
             >
               <div className="space-y-4">

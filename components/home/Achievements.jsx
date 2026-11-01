@@ -138,14 +138,14 @@ export default function Achievements() {
   }, []);
 
   return (
-    <section className="py-16 sm:py-24 bg-[#FAF7F0] border-b border-[#B89555]/20 relative overflow-hidden">
+    <section className="py-8 sm:py-12 lg:py-14 bg-[#FAF7F0] border-b border-[#B89555]/20 relative overflow-hidden">
       {/* Decorative Background Cultural Motif */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-[#B89555]/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#682C2C]/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8">
           <div className="space-y-2">
             <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#682C2C] flex items-center gap-2 font-sans">
               <span className="w-6 h-px bg-[#682C2C]" />
@@ -169,7 +169,7 @@ export default function Achievements() {
         </div>
 
         {/* 4 Prominent Stat Counters */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-12 sm:mb-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (

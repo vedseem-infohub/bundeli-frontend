@@ -6,7 +6,7 @@ import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 
 export default function StorytellingBanner() {
   return (
-    <section className="relative py-28 lg:py-36 bg-[#292522] text-[#F8F4EA] overflow-hidden border-b border-[#B89555]/30">
+    <section className="relative py-12 sm:py-16 lg:py-20 bg-[#292522] text-[#F8F4EA] overflow-hidden border-b border-[#B89555]/30">
       {/* Background Photography with atmospheric overlay */}
       <div className="absolute inset-0 z-0">
         <img

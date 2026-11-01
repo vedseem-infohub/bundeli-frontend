@@ -24,10 +24,10 @@ export default function BlogSection() {
   const articles = articlesList.slice(0, 3);
 
   return (
-    <section className="py-16 sm:py-24 bg-[#F8F4EA] border-b border-[#B89555]/20 relative overflow-hidden">
+    <section className="py-8 sm:py-12 lg:py-14 bg-[#F8F4EA] border-b border-[#B89555]/20 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8">
           <div className="space-y-2">
             <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#682C2C] flex items-center gap-2 font-sans">
               <span className="w-6 h-px bg-[#682C2C]" />

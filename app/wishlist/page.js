@@ -125,15 +125,14 @@ export default function WishlistPage() {
                       className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#25D366] hover:bg-[#1ebe57] text-[#0C381E] text-xs uppercase tracking-widest font-bold transition-colors rounded-xs shadow-xs cursor-pointer"
                     >
                       <WhatsAppIcon className="w-4 h-4" />
-                      <span>Commission on WhatsApp</span>
+                      <span>Artworks on WhatsApp</span>
                     </button>
                     <button
                       onClick={() => selectArtwork(artwork)}
-                      className={`w-full py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-xs border transition-colors flex items-center justify-center gap-1.5 ${
-                        selected
+                      className={`w-full py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-xs border transition-colors flex items-center justify-center gap-1.5 ${selected
                           ? "border-[#25D366] text-[#0C381E] bg-[#25D366]/10"
                           : "border-[#B89555]/40 text-[#682C2C] hover:bg-[#B89555]/10"
-                      }`}
+                        }`}
                     >
                       {selected && <Check className="w-3.5 h-3.5 text-[#25D366]" />}
                       <span>{selected ? "Selected for Commission" : "+ Add to Selection"}</span>

@@ -37,10 +37,10 @@ export default function NewArrivals() {
   };
 
   return (
-    <section className="py-20 lg:py-28 bg-[#F4EFE6] border-b border-[#B89555]/20 overflow-hidden">
+    <section className="py-8 sm:py-12 lg:py-14 bg-[#F4EFE6] border-b border-[#B89555]/20 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8">
           <div className="space-y-2">
             <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#682C2C] flex items-center gap-2">
               <span className="w-6 h-px bg-[#682C2C]" />

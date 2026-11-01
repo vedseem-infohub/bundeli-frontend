@@ -140,10 +140,10 @@ export default function CelebrityPaintings() {
   };
 
   return (
-    <section className="py-16 sm:py-24 bg-[#F8F4EA] border-b border-[#B89555]/20 relative overflow-hidden">
+    <section className="py-8 sm:py-12 lg:py-14 bg-[#F8F4EA] border-b border-[#B89555]/20 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8">
           <div className="space-y-2">
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#292522]">
               Paintings Sold to Celebrated Patrons
@@ -154,7 +154,7 @@ export default function CelebrityPaintings() {
             href="/contact?subject=celebrity-commission"
             className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[#682C2C] hover:text-[#B89555] border-b border-[#682C2C] pb-1 transition-colors mt-4 md:mt-0 group shrink-0 font-sans"
           >
-            <span>Commission a Celebrity-Grade Masterpiece</span>
+            <span>Artwork a Celebrity-Grade Masterpiece</span>
             <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform" />
           </Link>
         </div>
@@ -245,7 +245,7 @@ export default function CelebrityPaintings() {
                       className="w-full py-2.5 px-4 bg-[#682C2C] hover:bg-[#522222] text-[#F8F4EA] text-xs font-sans font-semibold uppercase tracking-wider rounded-xs border border-[#B89555]/40 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-[#B89555]" />
-                      <span>Request Similar Commission</span>
+                      <span>Request Similar Artworks</span>
                     </button>
                   </div>
                 </div>

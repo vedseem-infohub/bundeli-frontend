@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { artists } from "@/data/artists";
 import { artworks } from "@/data/artworks";
+import { api } from "@/lib/api";
 import ArtworkGrid from "@/components/artwork/ArtworkGrid";
 import { MapPin, Award, Palette, ArrowRight, ChevronRight, Sparkles } from "lucide-react";
 
@@ -12,7 +13,37 @@ export default function ArtistDetailPage() {
   const params = useParams();
   const { slug } = params;
 
-  const artist = artists.find((a) => a.slug === slug);
+  const staticArtist = artists.find((a) => a.slug === slug);
+  const [artist, setArtist] = useState(staticArtist);
+  const [loading, setLoading] = useState(!staticArtist);
+
+  useEffect(() => {
+    let isMounted = true;
+    api
+      .getArtistBySlug(slug)
+      .then((backendArtist) => {
+        if (isMounted && backendArtist) {
+          setArtist(backendArtist);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="py-24 text-center max-w-md mx-auto px-4">
+        <p className="text-xs uppercase tracking-widest text-[#B89555] font-semibold animate-pulse">
+          Loading Master Atelier...
+        </p>
+      </div>
+    );
+  }
 
   if (!artist) {
     return (
@@ -29,7 +60,7 @@ export default function ArtistDetailPage() {
   }
 
   const artistArtworks = artworks.filter((a) => a.artistSlug === artist.slug);
-  const otherArtists = artists.filter((a) => a.id !== artist.id).slice(0, 3);
+  const otherArtists = artists.filter((a) => (a.slug || a.id) !== (artist.slug || artist.id)).slice(0, 3);
 
   return (
     <div className="py-8 lg:py-14 bg-[#F8F4EA] min-h-screen">

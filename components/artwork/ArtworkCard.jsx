@@ -67,9 +67,8 @@ export default function ArtworkCard({ artwork }) {
 
   return (
     <div
-      className={`group relative flex flex-col bg-[#F8F4EA] border transition-all duration-300 rounded-sm overflow-hidden shadow-art hover:shadow-art-hover ${
-        selected ? "border-[#25D366] ring-1 ring-[#25D366]/40" : "border-[#B89555]/20 hover:border-[#B89555]/80"
-      }`}
+      className={`group relative flex flex-col bg-[#F8F4EA] border transition-all duration-300 rounded-sm overflow-hidden shadow-art hover:shadow-art-hover ${selected ? "border-[#25D366] ring-1 ring-[#25D366]/40" : "border-[#B89555]/20 hover:border-[#B89555]/80"
+        }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -101,11 +100,10 @@ export default function ArtworkCard({ artwork }) {
           {/* Select Toggle Button */}
           <button
             onClick={handleToggleSelect}
-            className={`p-1.5 rounded-full transition-all duration-200 shadow-sm flex items-center justify-center ${
-              selected
+            className={`p-1.5 rounded-full transition-all duration-200 shadow-sm flex items-center justify-center ${selected
                 ? "bg-[#25D366] text-white"
                 : "bg-[#F8F4EA]/90 text-[#292522] hover:text-[#25D366] hover:bg-[#F8F4EA]"
-            }`}
+              }`}
             aria-label={selected ? "Selected for commission" : "Select artwork"}
             title={selected ? "Selected for commission" : "Select artwork"}
           >
@@ -115,11 +113,10 @@ export default function ArtworkCard({ artwork }) {
           {/* Wishlist Button */}
           <button
             onClick={handleWishlist}
-            className={`p-1.5 rounded-full transition-all duration-200 shadow-sm ${
-              inWish
+            className={`p-1.5 rounded-full transition-all duration-200 shadow-sm ${inWish
                 ? "bg-[#682C2C] text-[#F8F4EA]"
                 : "bg-[#F8F4EA]/90 text-[#292522] hover:text-[#682C2C] hover:bg-[#F8F4EA]"
-            }`}
+              }`}
             aria-label={inWish ? "Remove from saved works" : "Save to works"}
             title={inWish ? "Remove from saved works" : "Save to works"}
           >
@@ -198,7 +195,7 @@ export default function ArtworkCard({ artwork }) {
             aria-label={`Commission ${artwork.title} on WhatsApp`}
           >
             <WhatsAppIcon className="w-4 h-4 text-[#0C381E]" />
-            <span>Commission on WhatsApp</span>
+            <span>Artworks on WhatsApp</span>
           </button>
         </div>
       </div>

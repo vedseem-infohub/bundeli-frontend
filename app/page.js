@@ -10,7 +10,6 @@ import NewsSection from "@/components/home/NewsSection";
 import BlogSection from "@/components/home/BlogSection";
 import ReviewsSection from "@/components/home/ReviewsSection";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
-import Newsletter from "@/components/home/Newsletter";
 
 export default function HomePage() {
   return (
@@ -27,11 +26,11 @@ export default function HomePage() {
       {/* Section 4: New Arrivals (Fresh from Regional Ateliers) */}
       <NewArrivals />
 
-      {/* Section 5: Cultural Achievements Section */}
-      <Achievements />
-
-      {/* Section 6: Paintings Sold to Celebrities & Esteemed Patrons */}
+      {/* Section 5: Paintings Sold to Celebrities & Esteemed Patrons */}
       <CelebrityPaintings />
+
+      {/* Section 6: Cultural Achievements Section */}
+      <Achievements />
 
       {/* Section 7: Latest News & Press Dispatches */}
       <NewsSection />
@@ -44,9 +43,6 @@ export default function HomePage() {
 
       {/* Section 10: Why Choose Bundeli Kalavrat */}
       <WhyChooseUs />
-
-      {/* Section 10: Newsletter */}
-      <Newsletter />
     </div>
   );
 }

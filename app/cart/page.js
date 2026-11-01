@@ -169,7 +169,7 @@ export default function CartPage() {
             <div className="lg:col-span-4 bg-[#F4EFE6] border border-[#B89555]/30 p-6 rounded-sm space-y-6 shadow-art">
               <div>
                 <h3 className="font-serif text-xl font-bold text-[#292522]">
-                  Commission on WhatsApp
+                  Artworks on WhatsApp
                 </h3>
                 <p className="text-xs text-[#292522]/70 mt-1 leading-relaxed">
                   Submit your selected artworks directly to our Orchha atelier. We will review dimensions, pigments, and timeline with you.

@@ -13,10 +13,10 @@ export default function FeaturedCollections() {
   const contemporaryCol = collections[4]; // Contemporary Expressions
 
   return (
-    <section className="py-20 lg:py-28 bg-[#F8F4EA] border-b border-[#B89555]/20">
+    <section className="py-8 sm:py-12 lg:py-14 bg-[#F8F4EA] border-b border-[#B89555]/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8 space-y-3">
           <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#682C2C] flex items-center justify-center gap-2">
             <span className="w-6 h-px bg-[#682C2C]" />
             EXCEPTIONAL ANTHOLOGIES

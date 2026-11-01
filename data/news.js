@@ -8,6 +8,8 @@ export const newsDispatches = [
     date: "October 28, 2026",
     readTime: "3 min read",
     image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=1200&q=85",
+    video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    mediaType: "video",
     summary:
       "A landmark exhibition featuring 28 original wasli frescoes, drawing international museum curators, heritage architects, and private connoisseurs worldwide.",
     link: "/contact?subject=exhibition-inquiry",

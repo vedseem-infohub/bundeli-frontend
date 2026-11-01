@@ -96,9 +96,8 @@ export default function QuickViewModal() {
                 <button
                   key={idx}
                   onClick={() => setActiveImageIndex(idx)}
-                  className={`w-14 h-16 rounded-sm overflow-hidden border-2 transition-all shrink-0 ${
-                    activeImageIndex === idx ? "border-[#682C2C]" : "border-transparent opacity-60 hover:opacity-100"
-                  }`}
+                  className={`w-14 h-16 rounded-sm overflow-hidden border-2 transition-all shrink-0 ${activeImageIndex === idx ? "border-[#682C2C]" : "border-transparent opacity-60 hover:opacity-100"
+                    }`}
                 >
                   <img src={getImageUrl(img)} alt="Thumbnail" className="w-full h-full object-cover" />
                 </button>
@@ -173,16 +172,15 @@ export default function QuickViewModal() {
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#25D366] hover:bg-[#1ebe57] text-[#0C381E] text-xs uppercase tracking-widest font-bold transition-colors rounded-sm shadow-md cursor-pointer"
               >
                 <WhatsAppIcon className="w-4 h-4 text-[#0C381E]" />
-                <span>Commission on WhatsApp</span>
+                <span>Artworks on WhatsApp</span>
               </button>
 
               <button
                 onClick={() => toggleSelectArtwork(artwork)}
-                className={`p-3 border rounded-sm transition-colors ${
-                  selected
+                className={`p-3 border rounded-sm transition-colors ${selected
                     ? "border-[#25D366] bg-[#25D366]/10 text-[#0C381E]"
                     : "border-[#B89555]/40 hover:border-[#682C2C] text-[#292522]"
-                }`}
+                  }`}
                 title={selected ? "Selected for commission" : "Select artwork"}
               >
                 <Check className={`w-4 h-4 ${selected ? "text-[#25D366] stroke-[3]" : ""}`} />
@@ -190,11 +188,10 @@ export default function QuickViewModal() {
 
               <button
                 onClick={() => toggleWishlist(artwork)}
-                className={`p-3 border rounded-sm transition-colors ${
-                  inWish
+                className={`p-3 border rounded-sm transition-colors ${inWish
                     ? "border-[#682C2C] bg-[#682C2C]/10 text-[#682C2C]"
                     : "border-[#B89555]/40 hover:border-[#682C2C] text-[#292522]"
-                }`}
+                  }`}
                 aria-label="Wishlist toggle"
               >
                 <Heart className={`w-4 h-4 ${inWish ? "fill-current" : ""}`} />

@@ -63,10 +63,10 @@ export default function ExploreArtworks() {
   const currentTabObj = tabs.find((t) => t.id === activeTab) || tabs[0];
 
   return (
-    <section className="py-16 sm:py-24 bg-[#F8F4EA] border-b border-[#B89555]/20">
+    <section className="py-8 sm:py-12 lg:py-14 bg-[#F8F4EA] border-b border-[#B89555]/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8">
           <div className="space-y-2">
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#292522]">
               Explore Masterpiece Artworks
@@ -83,7 +83,7 @@ export default function ExploreArtworks() {
         </div>
 
         {/* Filter Discipline Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 sm:mb-10 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 sm:mb-8 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
