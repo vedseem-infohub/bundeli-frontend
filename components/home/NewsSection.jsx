@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { newsDispatches as defaultNews } from "@/data/news";
 import { api, getImageUrl } from "@/lib/api";
 import {
   Calendar,
@@ -20,23 +19,34 @@ function getYoutubeEmbedUrl(url) {
 }
 
 export default function NewsSection() {
-  const [newsList, setNewsList] = useState(defaultNews);
+  const [newsList, setNewsList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
-    api.getNews().then((backendNews) => {
-      if (isMounted && backendNews && backendNews.length > 0) {
-        setNewsList(backendNews);
-      }
-    });
+    api
+      .getNews()
+      .then((backendNews) => {
+        if (isMounted) {
+          setNewsList(backendNews || []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const featuredNews = newsList[0] || defaultNews[0];
+  const featuredNews = newsList[0];
   const sideNews = newsList.slice(1, 4);
+
+  if (!loading && newsList.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-8 sm:py-12 lg:py-14 bg-[#FAF7F0] border-b border-[#B89555]/20 relative overflow-hidden">

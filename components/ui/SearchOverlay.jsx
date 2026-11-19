@@ -4,27 +4,36 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { artworks as defaultArtworks } from "@/data/artworks";
-import { artists } from "@/data/artists";
-import { categories } from "@/data/categories";
-import { collections } from "@/data/collections";
 import { api, getImageUrl } from "@/lib/api";
 import { Search, X, ArrowRight, Sparkles, Tag, User, Layers, Palette } from "lucide-react";
 
 export default function SearchOverlay() {
   const { isSearchOpen, setIsSearchOpen } = useApp();
   const [query, setQuery] = useState("");
-  const [artworksList, setArtworksList] = useState(defaultArtworks);
+  const [artworksList, setArtworksList] = useState([]);
+  const [artistsList, setArtistsList] = useState([]);
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [collectionsList, setCollectionsList] = useState([]);
   const inputRef = useRef(null);
   const router = useRouter();
 
   useEffect(() => {
     let isMounted = true;
-    api.getArtworks().then((backendArtworks) => {
-      if (isMounted && backendArtworks && backendArtworks.length > 0) {
-        setArtworksList(backendArtworks);
-      }
-    });
+    Promise.all([
+      api.getArtworks(),
+      api.getArtists(),
+      api.getCategories(),
+      api.getCollections(),
+    ])
+      .then(([arts, artists, cats, cols]) => {
+        if (!isMounted) return;
+        if (arts) setArtworksList(arts);
+        if (artists) setArtistsList(artists);
+        if (cats) setCategoriesList(cats);
+        if (cols) setCollectionsList(cols);
+      })
+      .catch((err) => console.error("SearchOverlay data load error:", err));
+
     return () => {
       isMounted = false;
     };
@@ -73,36 +82,36 @@ export default function SearchOverlay() {
   const matchingArtworks = cleanQuery
     ? artworksList.filter(
         (a) =>
-          a.title.toLowerCase().includes(cleanQuery) ||
-          a.artist.toLowerCase().includes(cleanQuery) ||
-          a.style.toLowerCase().includes(cleanQuery) ||
-          a.medium.toLowerCase().includes(cleanQuery) ||
-          a.category.toLowerCase().includes(cleanQuery)
+          (a.title || "").toLowerCase().includes(cleanQuery) ||
+          (a.artist || "").toLowerCase().includes(cleanQuery) ||
+          (a.style || "").toLowerCase().includes(cleanQuery) ||
+          (a.medium || "").toLowerCase().includes(cleanQuery) ||
+          (a.category || "").toLowerCase().includes(cleanQuery)
       )
     : [];
 
   const matchingArtists = cleanQuery
-    ? artists.filter(
+    ? artistsList.filter(
         (art) =>
-          art.name.toLowerCase().includes(cleanQuery) ||
-          art.location.toLowerCase().includes(cleanQuery) ||
-          art.style.toLowerCase().includes(cleanQuery)
+          (art.name || "").toLowerCase().includes(cleanQuery) ||
+          (art.location || "").toLowerCase().includes(cleanQuery) ||
+          (art.style || "").toLowerCase().includes(cleanQuery)
       )
     : [];
 
   const matchingCategories = cleanQuery
-    ? categories.filter(
+    ? categoriesList.filter(
         (c) =>
-          c.name.toLowerCase().includes(cleanQuery) ||
-          c.shortDescription.toLowerCase().includes(cleanQuery)
+          (c.name || "").toLowerCase().includes(cleanQuery) ||
+          (c.shortDescription || c.description || "").toLowerCase().includes(cleanQuery)
       )
     : [];
 
   const matchingCollections = cleanQuery
-    ? collections.filter(
+    ? collectionsList.filter(
         (col) =>
-          col.title.toLowerCase().includes(cleanQuery) ||
-          col.tagline.toLowerCase().includes(cleanQuery)
+          (col.title || "").toLowerCase().includes(cleanQuery) ||
+          (col.tagline || "").toLowerCase().includes(cleanQuery)
       )
     : [];
 
@@ -199,7 +208,7 @@ export default function SearchOverlay() {
               >
                 <div>
                   <h4 className="text-base font-serif text-[#F8F4EA] group-hover:text-[#B89555] transition-colors">
-                    Meet Master Artisans & Painters
+                    Meet Master Artisans &amp; Painters
                   </h4>
                   <p className="text-xs text-[#E9DFCD]/70">Centuries of living heritage lineages</p>
                 </div>
@@ -211,7 +220,7 @@ export default function SearchOverlay() {
           <div className="space-y-8">
             <div className="flex items-center justify-between border-b border-[#F8F4EA]/10 pb-4">
               <p className="text-sm text-[#E9DFCD]">
-                Search results for <span className="font-serif italic text-[#B89555]">"{query}"</span>
+                Search results for <span className="font-serif italic text-[#B89555]">&ldquo;{query}&rdquo;</span>
               </p>
               {matchingArtworks.length > 0 && (
                 <button
@@ -228,7 +237,7 @@ export default function SearchOverlay() {
                 <Palette className="w-12 h-12 text-[#B89555]/50 mx-auto mb-4 stroke-1" />
                 <h3 className="text-xl font-serif text-[#F8F4EA] mb-2">No matching art treasures found</h3>
                 <p className="text-sm text-[#E9DFCD]/70 max-w-md mx-auto mb-6">
-                  We couldn't find matches for "{query}". Try searching for regional art terms like "Orchha", "Terracotta", "Miniature", "Fresco", or browse our complete collection.
+                  We couldn&apos;t find matches for &ldquo;{query}&rdquo;. Try searching for regional art terms like &ldquo;Orchha&rdquo;, &ldquo;Terracotta&rdquo;, &ldquo;Miniature&rdquo;, &ldquo;Fresco&rdquo;, or browse our complete collection.
                 </p>
                 <Link
                   href="/shop"
@@ -251,7 +260,7 @@ export default function SearchOverlay() {
                       {matchingArtworks.slice(0, 6).map((art, idx) => (
                         <Link
                           key={art._id || art.id || idx}
-                          href={`/art/${art.slug}`}
+                          href={`/art/${art.slug || art._id}`}
                           onClick={() => setIsSearchOpen(false)}
                           className="flex gap-4 p-3 rounded-sm bg-[#292522] border border-[#F8F4EA]/10 hover:border-[#B89555] transition-all group"
                         >
@@ -269,7 +278,7 @@ export default function SearchOverlay() {
                             </h5>
                             <p className="text-xs text-[#E9DFCD]/70 truncate">{art.artist}</p>
                             <p className="text-xs font-medium text-[#F8F4EA] mt-1">
-                              {art.isPriceOnRequest ? "Price on Request" : `₹${art.price.toLocaleString("en-IN")}`}
+                              {art.isPriceOnRequest ? "Price on Request" : `₹${(art.price || 0).toLocaleString("en-IN")}`}
                             </p>
                           </div>
                         </Link>
@@ -286,15 +295,15 @@ export default function SearchOverlay() {
                       Artists ({matchingArtists.length})
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {matchingArtists.map((artist) => (
+                      {matchingArtists.map((artist, idx) => (
                         <Link
-                          key={artist.id}
-                          href={`/artists/${artist.slug}`}
+                          key={artist._id || artist.id || artist.slug || idx}
+                          href={`/artists/${artist.slug || artist._id}`}
                           onClick={() => setIsSearchOpen(false)}
                           className="flex items-center gap-4 p-3 rounded-sm bg-[#292522] border border-[#F8F4EA]/10 hover:border-[#B89555] transition-all group"
                         >
                           <img
-                            src={artist.avatar}
+                            src={getImageUrl(artist.avatar || artist.image)}
                             alt={artist.name}
                             className="w-14 h-14 rounded-full object-cover shrink-0 border border-[#B89555]/50"
                           />
@@ -320,15 +329,15 @@ export default function SearchOverlay() {
                           <Layers className="w-3.5 h-3.5" /> Categories
                         </h4>
                         <div className="space-y-2">
-                          {matchingCategories.map((c) => (
+                          {matchingCategories.map((c, idx) => (
                             <Link
-                              key={c.id}
-                              href={`/shop?category=${c.slug}`}
+                              key={c._id || c.id || c.slug || idx}
+                              href={`/shop?category=${c.slug || c._id}`}
                               onClick={() => setIsSearchOpen(false)}
                               className="block p-2.5 rounded-sm bg-[#292522] hover:bg-[#292522]/70 text-xs text-[#F8F4EA] hover:text-[#B89555] transition-colors"
                             >
                               <span className="font-serif text-sm block">{c.name}</span>
-                              <span className="text-[#E9DFCD]/60 text-[11px] line-clamp-1">{c.shortDescription}</span>
+                              <span className="text-[#E9DFCD]/60 text-[11px] line-clamp-1">{c.shortDescription || c.description}</span>
                             </Link>
                           ))}
                         </div>
@@ -340,9 +349,9 @@ export default function SearchOverlay() {
                           <Sparkles className="w-3.5 h-3.5" /> Collections
                         </h4>
                         <div className="space-y-2">
-                          {matchingCollections.map((col) => (
+                          {matchingCollections.map((col, idx) => (
                             <Link
-                              key={col.id}
+                              key={col._id || col.id || col.slug || idx}
                               href={`/collections/${col.slug}`}
                               onClick={() => setIsSearchOpen(false)}
                               className="block p-2.5 rounded-sm bg-[#292522] hover:bg-[#292522]/70 text-xs text-[#F8F4EA] hover:text-[#B89555] transition-colors"

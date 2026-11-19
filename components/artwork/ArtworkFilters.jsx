@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { categories } from "@/data/categories";
-import { artists } from "@/data/artists";
+import React, { useState, useEffect } from "react";
+import { api } from "@/lib/api";
 import { X, RotateCcw, ChevronDown, Filter } from "lucide-react";
 
 export default function ArtworkFilters({
@@ -12,7 +11,40 @@ export default function ArtworkFilters({
   totalResults,
   isMobileDrawer = false,
   onCloseMobile,
+  categories: propCategories,
+  artists: propArtists,
 }) {
+  const [categories, setCategories] = useState(propCategories || []);
+  const [artists, setArtists] = useState(propArtists || []);
+
+  useEffect(() => {
+    if (propCategories && propCategories.length > 0) {
+      setCategories(propCategories);
+    } else {
+      let isMounted = true;
+      api.getCategories().then((cats) => {
+        if (isMounted && cats) setCategories(cats);
+      });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [propCategories]);
+
+  useEffect(() => {
+    if (propArtists && propArtists.length > 0) {
+      setArtists(propArtists);
+    } else {
+      let isMounted = true;
+      api.getArtists().then((arts) => {
+        if (isMounted && arts) setArtists(arts);
+      });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [propArtists]);
+
   const [openSections, setOpenSections] = useState({
     categories: true,
     styles: true,
@@ -51,13 +83,6 @@ export default function ArtworkFilters({
     "Archival Giclée Pigment Print on Cotton Rag",
   ];
 
-  const priceRanges = [
-    { label: "Under ₹25,000", min: 0, max: 25000 },
-    { label: "₹25,000 - ₹50,000", min: 25000, max: 50000 },
-    { label: "₹50,000 - ₹1,00,000", min: 50000, max: 100000 },
-    { label: "Above ₹1,00,000", min: 100000, max: 9999999 },
-  ];
-
   const orientations = ["Portrait", "Landscape", "Square"];
   const sizes = ["Small", "Medium", "Large"];
 
@@ -83,15 +108,6 @@ export default function ArtworkFilters({
       ...prev,
       artist: prev.artist === slug ? "" : slug,
     }));
-  };
-
-  const handlePriceRangeToggle = (min, max) => {
-    setFilters((prev) => {
-      if (prev.minPrice === min && prev.maxPrice === max) {
-        return { ...prev, minPrice: null, maxPrice: null };
-      }
-      return { ...prev, minPrice: min, maxPrice: max };
-    });
   };
 
   const handleOrientationToggle = (ori) => {
@@ -157,7 +173,7 @@ export default function ArtworkFilters({
         <div className="flex flex-wrap gap-1.5 pb-2">
           {filters.category && (
             <span className="inline-flex items-center gap-1 text-[11px] bg-[#E9DFCD] text-[#292522] px-2 py-0.5 rounded-xs">
-              Category: {categories.find((c) => c.slug === filters.category)?.name || filters.category}
+              Category: {categories.find((c) => (c.slug || c._id) === filters.category)?.name || filters.category}
               <button onClick={() => handleCategoryToggle(filters.category)}>
                 <X className="w-3 h-3" />
               </button>
@@ -173,7 +189,7 @@ export default function ArtworkFilters({
           ))}
           {filters.artist && (
             <span className="inline-flex items-center gap-1 text-[11px] bg-[#E9DFCD] text-[#292522] px-2 py-0.5 rounded-xs">
-              Artist: {artists.find((a) => a.slug === filters.artist)?.name || filters.artist}
+              Artist: {artists.find((a) => (a.slug || a._id) === filters.artist)?.name || filters.artist}
               <button onClick={() => handleArtistToggle(filters.artist)}>
                 <X className="w-3 h-3" />
               </button>
@@ -199,39 +215,43 @@ export default function ArtworkFilters({
       )}
 
       {/* 1. Category Filter Section */}
-      <div className="border-b border-[#B89555]/20 pb-4">
-        <button
-          onClick={() => toggleSection("categories")}
-          className="w-full flex items-center justify-between text-xs uppercase tracking-widest font-semibold text-[#292522] py-1"
-        >
-          <span>Categories</span>
-          <ChevronDown
-            className={`w-3.5 h-3.5 text-[#B89555] transition-transform ${openSections.categories ? "rotate-180" : ""}`}
-          />
-        </button>
-        {openSections.categories && (
-          <div className="mt-3 space-y-2">
-            {categories.map((cat, idx) => (
-              <label
-                key={cat._id || cat.id || cat.slug || idx}
-                className="flex items-center justify-between text-xs text-[#292522]/80 hover:text-[#682C2C] cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="categoryFilter"
-                    checked={filters.category === cat.slug}
-                    onChange={() => handleCategoryToggle(cat.slug)}
-                    className="accent-[#682C2C]"
-                  />
-                  <span>{cat.name}</span>
-                </div>
-                <span className="text-[10px] text-[#72765A]">({cat.artworkCount})</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
+      {categories.length > 0 && (
+        <div className="border-b border-[#B89555]/20 pb-4">
+          <button
+            onClick={() => toggleSection("categories")}
+            className="w-full flex items-center justify-between text-xs uppercase tracking-widest font-semibold text-[#292522] py-1"
+          >
+            <span>Categories</span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-[#B89555] transition-transform ${openSections.categories ? "rotate-180" : ""}`}
+            />
+          </button>
+          {openSections.categories && (
+            <div className="mt-3 space-y-2">
+              {categories.map((cat, idx) => (
+                <label
+                  key={cat._id || cat.slug || idx}
+                  className="flex items-center justify-between text-xs text-[#292522]/80 hover:text-[#682C2C] cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="categoryFilter"
+                      checked={filters.category === (cat.slug || cat._id)}
+                      onChange={() => handleCategoryToggle(cat.slug || cat._id)}
+                      className="accent-[#682C2C]"
+                    />
+                    <span>{cat.name}</span>
+                  </div>
+                  {cat.artworkCount !== undefined && (
+                    <span className="text-[10px] text-[#72765A]">({cat.artworkCount})</span>
+                  )}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 2. Art Style Filter Section */}
       <div className="border-b border-[#B89555]/20 pb-4">
@@ -291,39 +311,43 @@ export default function ArtworkFilters({
       </div>
 
       {/* 4. Artists Section */}
-      <div className="border-b border-[#B89555]/20 pb-4">
-        <button
-          onClick={() => toggleSection("artists")}
-          className="w-full flex items-center justify-between text-xs uppercase tracking-widest font-semibold text-[#292522] py-1"
-        >
-          <span>Master Artists</span>
-          <ChevronDown
-            className={`w-3.5 h-3.5 text-[#B89555] transition-transform ${openSections.artists ? "rotate-180" : ""}`}
-          />
-        </button>
-        {openSections.artists && (
-          <div className="mt-3 space-y-2">
-            {artists.map((artist) => (
-              <label
-                key={artist.id}
-                className="flex items-center justify-between text-xs text-[#292522]/80 hover:text-[#682C2C] cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="artistFilter"
-                    checked={filters.artist === artist.slug}
-                    onChange={() => handleArtistToggle(artist.slug)}
-                    className="accent-[#682C2C]"
-                  />
-                  <span>{artist.name}</span>
-                </div>
-                <span className="text-[10px] text-[#72765A]">({artist.artworkCount})</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
+      {artists.length > 0 && (
+        <div className="border-b border-[#B89555]/20 pb-4">
+          <button
+            onClick={() => toggleSection("artists")}
+            className="w-full flex items-center justify-between text-xs uppercase tracking-widest font-semibold text-[#292522] py-1"
+          >
+            <span>Master Artists</span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-[#B89555] transition-transform ${openSections.artists ? "rotate-180" : ""}`}
+            />
+          </button>
+          {openSections.artists && (
+            <div className="mt-3 space-y-2">
+              {artists.map((artist, idx) => (
+                <label
+                  key={artist._id || artist.slug || artist.id || idx}
+                  className="flex items-center justify-between text-xs text-[#292522]/80 hover:text-[#682C2C] cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="artistFilter"
+                      checked={filters.artist === (artist.slug || artist._id)}
+                      onChange={() => handleArtistToggle(artist.slug || artist._id)}
+                      className="accent-[#682C2C]"
+                    />
+                    <span>{artist.name}</span>
+                  </div>
+                  {artist.artworkCount !== undefined && (
+                    <span className="text-[10px] text-[#72765A]">({artist.artworkCount})</span>
+                  )}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 5. Orientation & Size Section */}
       <div className="border-b border-[#B89555]/20 pb-4">

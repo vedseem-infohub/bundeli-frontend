@@ -77,11 +77,11 @@ export default function WishlistPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {wishlist.map((artwork) => {
-              const selected = isSelected(artwork.id);
+            {wishlist.map((artwork, idx) => {
+              const selected = isSelected(artwork._id || artwork.id);
               return (
                 <div
-                  key={artwork.id}
+                  key={artwork._id || artwork.id || artwork.slug || idx}
                   className="group flex flex-col bg-[#F4EFE6] border border-[#B89555]/25 rounded-sm overflow-hidden shadow-art hover:shadow-art-hover transition-all justify-between"
                 >
                   <div>
@@ -125,13 +125,13 @@ export default function WishlistPage() {
                       className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#25D366] hover:bg-[#1ebe57] text-[#0C381E] text-xs uppercase tracking-widest font-bold transition-colors rounded-xs shadow-xs cursor-pointer"
                     >
                       <WhatsAppIcon className="w-4 h-4" />
-                      <span>Artworks on WhatsApp</span>
+                      <span>Connect on WhatsApp</span>
                     </button>
                     <button
                       onClick={() => selectArtwork(artwork)}
                       className={`w-full py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-xs border transition-colors flex items-center justify-center gap-1.5 ${selected
-                          ? "border-[#25D366] text-[#0C381E] bg-[#25D366]/10"
-                          : "border-[#B89555]/40 text-[#682C2C] hover:bg-[#B89555]/10"
+                        ? "border-[#25D366] text-[#0C381E] bg-[#25D366]/10"
+                        : "border-[#B89555]/40 text-[#682C2C] hover:bg-[#B89555]/10"
                         }`}
                     >
                       {selected && <Check className="w-3.5 h-3.5 text-[#25D366]" />}

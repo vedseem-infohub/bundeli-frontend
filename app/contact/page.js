@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 export default function ContactPage() {
-  const { addToast } = useApp();
+  const { addToast, contactInfo } = useApp();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -102,19 +102,9 @@ export default function ContactPage() {
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-[#682C2C] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-serif font-bold text-sm text-[#292522]">Orchha Flagship Gallery</h4>
+                  <h4 className="font-serif font-bold text-sm text-[#292522]">Orchha Flagship Gallery & Atelier</h4>
                   <p className="text-[#292522]/70 mt-0.5">
-                    Raja Ram Marg, Opposite Jahangir Mahal, Orchha 472246, Niwari District, Madhya Pradesh, India
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-[#682C2C] shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-serif font-bold text-sm text-[#292522]">Khajuraho Sculpture Studio</h4>
-                  <p className="text-[#292522]/70 mt-0.5">
-                    Near Western Group of Temples, Sevagram, Khajuraho 471606, Madhya Pradesh, India
+                    {contactInfo?.address?.formatted || "Raja Ram Marg, Opposite Jahangir Mahal, Orchha 472246, Niwari District, Madhya Pradesh, India"}
                   </p>
                 </div>
               </div>
@@ -122,8 +112,15 @@ export default function ContactPage() {
               <div className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-[#682C2C] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-serif font-bold text-sm text-[#292522]">Curatorial Inquiries</h4>
-                  <p className="text-[#292522]/70 mt-0.5">+91 7686 288 411 / +91 98112 00412</p>
+                  <h4 className="font-serif font-bold text-sm text-[#292522]">Curatorial & Patron Inquiries</h4>
+                  <p className="text-[#292522]/70 mt-0.5">
+                    <a
+                      href={`tel:${(contactInfo?.mobileNo || contactInfo?.phone || "+917686288411").replace(/[^\d+]/g, "")}`}
+                      className="hover:text-[#682C2C] transition-colors"
+                    >
+                      {contactInfo?.mobileNo || contactInfo?.phone || "+91 7686 288 411"}
+                    </a>
+                  </p>
                 </div>
               </div>
 
@@ -131,8 +128,14 @@ export default function ContactPage() {
                 <Mail className="w-5 h-5 text-[#682C2C] shrink-0 mt-0.5" />
                 <div>
                   <h4 className="font-serif font-bold text-sm text-[#292522]">Electronic Correspondence</h4>
-                  <p className="text-[#292522]/70 mt-0.5">curator@bundelikalavrat.com</p>
-                  <p className="text-[#292522]/70">advisory@bundelikalavrat.com</p>
+                  <p className="text-[#292522]/70 mt-0.5">
+                    <a
+                      href={`mailto:${contactInfo?.email || "curator@bundelikalavrat.com"}`}
+                      className="hover:text-[#682C2C] transition-colors"
+                    >
+                      {contactInfo?.email || "curator@bundelikalavrat.com"}
+                    </a>
+                  </p>
                 </div>
               </div>
 

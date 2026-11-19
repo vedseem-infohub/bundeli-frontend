@@ -2,24 +2,28 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { artworks as defaultArtworks } from "@/data/artworks";
 import { api } from "@/lib/api";
 import ArtworkCard from "@/components/artwork/ArtworkCard";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 
 export default function NewArrivals() {
-  const [newArrivalsList, setNewArrivalsList] = useState(
-    defaultArtworks.filter((a) => a.isNew)
-  );
+  const [newArrivalsList, setNewArrivalsList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const scrollRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
-    api.getNewArrivals().then((backendArrivals) => {
-      if (isMounted && backendArrivals && backendArrivals.length > 0) {
-        setNewArrivalsList(backendArrivals);
-      }
-    });
+    api
+      .getNewArrivals()
+      .then((backendArrivals) => {
+        if (isMounted) {
+          setNewArrivalsList(backendArrivals || []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
@@ -35,6 +39,10 @@ export default function NewArrivals() {
       });
     }
   };
+
+  if (!loading && newArrivalsList.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-8 sm:py-12 lg:py-14 bg-[#F4EFE6] border-b border-[#B89555]/20 overflow-hidden">

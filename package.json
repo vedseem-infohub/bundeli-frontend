@@ -12,14 +12,15 @@
     "@tailwindcss/postcss": "^4.3.3",
     "framer-motion": "^14.1.0",
     "lucide-react": "^1.65.0",
-    "next": "16.4.3",
+    "next": "^16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
+    "autocannon": "^9.0.0",
     "eslint": "^9",
-    "eslint-config-next": "16.4.3",
+    "eslint-config-next": "^16.4.6",
     "tailwindcss": "^4"
   }
 }

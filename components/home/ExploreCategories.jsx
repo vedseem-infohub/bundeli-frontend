@@ -2,24 +2,38 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { categories as defaultCategories } from "@/data/categories";
 import { api, getImageUrl } from "@/lib/api";
 import { ArrowRight } from "lucide-react";
 
 export default function ExploreCategories() {
-  const [categoriesList, setCategoriesList] = useState(defaultCategories);
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    api.getCategories().then((backendCategories) => {
-      if (isMounted && backendCategories && backendCategories.length > 0) {
-        setCategoriesList(backendCategories);
-      }
-    });
+    api
+      .getCategories()
+      .then((backendCategories) => {
+        if (isMounted) {
+          if (backendCategories && backendCategories.length > 0) {
+            setCategoriesList(backendCategories);
+          } else {
+            setCategoriesList([]);
+          }
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
   }, []);
+
+  if (!loading && categoriesList.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-8 sm:py-12 lg:py-14 bg-[#FAF7F0] border-b border-[#B89555]/20">

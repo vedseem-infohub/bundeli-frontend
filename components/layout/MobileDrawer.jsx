@@ -1,16 +1,32 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
-import { categories } from "@/data/categories";
-import { collections } from "@/data/collections";
+import { api } from "@/lib/api";
 import { X, ChevronDown, ChevronRight, Phone, Mail, MapPin, Heart, Palette, User, LogOut } from "lucide-react";
 
 export default function MobileDrawer({ isOpen, onClose, cartCount, wishlistCount }) {
-  const { user, logout } = useApp();
+  const { user, logout, contactInfo } = useApp();
   const [shopExpanded, setShopExpanded] = useState(false);
   const [collectionsExpanded, setCollectionsExpanded] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [collections, setCollections] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([api.getCategories(), api.getCollections()])
+      .then(([cats, cols]) => {
+        if (!isMounted) return;
+        if (cats) setCategories(cats);
+        if (cols) setCollections(cols);
+      })
+      .catch((err) => console.error("MobileDrawer data error:", err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -148,7 +164,7 @@ export default function MobileDrawer({ isOpen, onClose, cartCount, wishlistCount
                 {categories.map((c, idx) => (
                   <Link
                     key={c._id || c.id || c.slug || idx}
-                    href={`/shop?category=${c.slug}`}
+                    href={`/shop?category=${c.slug || c._id}`}
                     onClick={onClose}
                     className="block py-1 hover:text-[#682C2C]"
                   >
@@ -227,15 +243,17 @@ export default function MobileDrawer({ isOpen, onClose, cartCount, wishlistCount
         <div className="p-6 bg-[#F4EFE6] border-t border-[#B89555]/20 text-xs space-y-3 font-sans text-[#292522]/70">
           <div className="flex items-center gap-2">
             <MapPin className="w-3.5 h-3.5 text-[#B89555] shrink-0" />
-            <span>Orchha & Khajuraho Gallery, MP, India</span>
+            <span className="truncate">
+              {contactInfo?.address?.city ? `${contactInfo.address.city}, MP, India` : "Orchha & Khajuraho Gallery, MP, India"}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <Mail className="w-3.5 h-3.5 text-[#B89555] shrink-0" />
-            <span>curator@bundelikalavrat.com</span>
+            <span className="truncate">{contactInfo?.email || "curator@bundelikalavrat.com"}</span>
           </div>
           <div className="flex items-center gap-2">
             <Phone className="w-3.5 h-3.5 text-[#B89555] shrink-0" />
-            <span>+91 7686 288 411</span>
+            <span>{contactInfo?.mobileNo || contactInfo?.phone || "+91 7686 288 411"}</span>
           </div>
         </div>
       </div>

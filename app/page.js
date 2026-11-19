@@ -1,5 +1,3 @@
-"use client";
-
 import HeroBanner from "@/components/home/HeroBanner";
 import ExploreCategories from "@/components/home/ExploreCategories";
 import ExploreArtworks from "@/components/home/ExploreArtworks";

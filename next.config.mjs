@@ -5,13 +5,15 @@ const nextConfig = {
   },
   experimental: {
     cpus: 1,
-    workerThreads: false,
   },
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: false,
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**',
+        protocol: "https",
+        hostname: "**",
       },
     ],
   },

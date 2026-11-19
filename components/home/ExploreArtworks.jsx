@@ -2,31 +2,29 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { artworks as defaultArtworks } from "@/data/artworks";
-import { categories as defaultCategories } from "@/data/categories";
 import { api } from "@/lib/api";
 import ArtworkCard from "@/components/artwork/ArtworkCard";
 import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
 
 export default function ExploreArtworks() {
   const [activeTab, setActiveTab] = useState("all");
-  const [artworksList, setArtworksList] = useState(defaultArtworks);
-  const [categoriesList, setCategoriesList] = useState(defaultCategories);
+  const [artworksList, setArtworksList] = useState([]);
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Fetch live artworks and categories from backend
   useEffect(() => {
     let isMounted = true;
-    Promise.all([api.getArtworks(), api.getCategories()]).then(
-      ([backendArtworks, backendCategories]) => {
+    Promise.all([api.getArtworks(), api.getCategories()])
+      .then(([backendArtworks, backendCategories]) => {
         if (!isMounted) return;
-        if (backendArtworks && backendArtworks.length > 0) {
-          setArtworksList(backendArtworks);
-        }
-        if (backendCategories && backendCategories.length > 0) {
-          setCategoriesList(backendCategories);
-        }
-      }
-    );
+        setArtworksList(backendArtworks || []);
+        setCategoriesList(backendCategories || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
@@ -61,6 +59,10 @@ export default function ExploreArtworks() {
   }, [activeTab, artworksList]);
 
   const currentTabObj = tabs.find((t) => t.id === activeTab) || tabs[0];
+
+  if (!loading && artworksList.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-8 sm:py-12 lg:py-14 bg-[#F8F4EA] border-b border-[#B89555]/20">

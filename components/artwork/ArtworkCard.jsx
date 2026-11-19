@@ -101,8 +101,8 @@ export default function ArtworkCard({ artwork }) {
           <button
             onClick={handleToggleSelect}
             className={`p-1.5 rounded-full transition-all duration-200 shadow-sm flex items-center justify-center ${selected
-                ? "bg-[#25D366] text-white"
-                : "bg-[#F8F4EA]/90 text-[#292522] hover:text-[#25D366] hover:bg-[#F8F4EA]"
+              ? "bg-[#25D366] text-white"
+              : "bg-[#F8F4EA]/90 text-[#292522] hover:text-[#25D366] hover:bg-[#F8F4EA]"
               }`}
             aria-label={selected ? "Selected for commission" : "Select artwork"}
             title={selected ? "Selected for commission" : "Select artwork"}
@@ -114,8 +114,8 @@ export default function ArtworkCard({ artwork }) {
           <button
             onClick={handleWishlist}
             className={`p-1.5 rounded-full transition-all duration-200 shadow-sm ${inWish
-                ? "bg-[#682C2C] text-[#F8F4EA]"
-                : "bg-[#F8F4EA]/90 text-[#292522] hover:text-[#682C2C] hover:bg-[#F8F4EA]"
+              ? "bg-[#682C2C] text-[#F8F4EA]"
+              : "bg-[#F8F4EA]/90 text-[#292522] hover:text-[#682C2C] hover:bg-[#F8F4EA]"
               }`}
             aria-label={inWish ? "Remove from saved works" : "Save to works"}
             title={inWish ? "Remove from saved works" : "Save to works"}
@@ -136,7 +136,7 @@ export default function ArtworkCard({ artwork }) {
           <button
             onClick={handleCommissionWhatsApp}
             className="flex items-center gap-1.5 py-2 px-3 bg-[#1ebe57] hover:bg-[#169c47] text-white text-[11px] font-bold uppercase tracking-wider rounded-xs shadow-md transition-colors"
-            title="Commission artwork on WhatsApp"
+            title="Connect on WhatsApp"
           >
             <WhatsAppIcon className="w-3.5 h-3.5" />
             <span>WhatsApp</span>
@@ -195,7 +195,7 @@ export default function ArtworkCard({ artwork }) {
             aria-label={`Commission ${artwork.title} on WhatsApp`}
           >
             <WhatsAppIcon className="w-4 h-4 text-[#0C381E]" />
-            <span>Artworks on WhatsApp</span>
+            <span>Connect on WhatsApp</span>
           </button>
         </div>
       </div>

@@ -3,9 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { artists } from "@/data/artists";
-import { artworks } from "@/data/artworks";
-import { api } from "@/lib/api";
+import { api, getImageUrl } from "@/lib/api";
 import ArtworkGrid from "@/components/artwork/ArtworkGrid";
 import { MapPin, Award, Palette, ArrowRight, ChevronRight, Sparkles } from "lucide-react";
 
@@ -13,19 +11,32 @@ export default function ArtistDetailPage() {
   const params = useParams();
   const { slug } = params;
 
-  const staticArtist = artists.find((a) => a.slug === slug);
-  const [artist, setArtist] = useState(staticArtist);
-  const [loading, setLoading] = useState(!staticArtist);
+  const [artist, setArtist] = useState(null);
+  const [artistArtworks, setArtistArtworks] = useState([]);
+  const [otherArtists, setOtherArtists] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    api
-      .getArtistBySlug(slug)
-      .then((backendArtist) => {
-        if (isMounted && backendArtist) {
+    Promise.all([
+      api.getArtistBySlug(slug),
+      api.getArtworks({ artistSlug: slug }),
+      api.getArtists(),
+    ])
+      .then(([backendArtist, backendArtworks, allArtists]) => {
+        if (!isMounted) return;
+        if (backendArtist) {
           setArtist(backendArtist);
-          setLoading(false);
         }
+        if (backendArtworks) {
+          setArtistArtworks(backendArtworks);
+        }
+        if (allArtists) {
+          setOtherArtists(
+            allArtists.filter((a) => (a.slug || a._id || a.id) !== slug).slice(0, 3)
+          );
+        }
+        setLoading(false);
       })
       .catch(() => {
         if (isMounted) setLoading(false);
@@ -59,9 +70,6 @@ export default function ArtistDetailPage() {
     );
   }
 
-  const artistArtworks = artworks.filter((a) => a.artistSlug === artist.slug);
-  const otherArtists = artists.filter((a) => (a.slug || a.id) !== (artist.slug || artist.id)).slice(0, 3);
-
   return (
     <div className="py-8 lg:py-14 bg-[#F8F4EA] min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
@@ -82,7 +90,7 @@ export default function ArtistDetailPage() {
         <div className="bg-[#F4EFE6] rounded-sm border border-[#B89555]/30 overflow-hidden shadow-xl">
           <div className="relative h-64 sm:h-80 w-full overflow-hidden bg-[#292522]">
             <img
-              src={artist.coverImage}
+              src={getImageUrl(artist.coverImage || artist.bannerImage || artist.avatar)}
               alt={artist.name}
               className="w-full h-full object-cover opacity-60"
             />
@@ -91,7 +99,7 @@ export default function ArtistDetailPage() {
 
           <div className="px-6 sm:px-10 pb-10 pt-0 relative -mt-20 flex flex-col sm:flex-row gap-6 sm:gap-8 items-start">
             <img
-              src={artist.avatar}
+              src={getImageUrl(artist.avatar || artist.image)}
               alt={artist.name}
               className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-[#F8F4EA] shadow-2xl shrink-0"
             />
@@ -193,14 +201,14 @@ export default function ArtistDetailPage() {
             Other Master Artisans of Central India
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {otherArtists.map((other) => (
+            {otherArtists.map((other, idx) => (
               <Link
-                key={other.id}
-                href={`/artists/${other.slug}`}
+                key={other._id || other.id || other.slug || idx}
+                href={`/artists/${other.slug || other._id}`}
                 className="group flex gap-4 p-4 bg-[#F4EFE6] border border-[#B89555]/20 hover:border-[#682C2C] rounded-sm transition-all"
               >
                 <img
-                  src={other.avatar}
+                  src={getImageUrl(other.avatar || other.image)}
                   alt={other.name}
                   className="w-16 h-16 rounded-full object-cover border border-[#B89555]/40 shrink-0"
                 />

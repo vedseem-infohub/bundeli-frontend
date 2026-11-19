@@ -27,6 +27,7 @@ export default function Header() {
     setIsSearchOpen,
     user,
     logout,
+    contactInfo,
   } = useApp();
 
   const [activeMegaMenu, setActiveMegaMenu] = useState(null); // 'shop' | 'collections' | null
@@ -96,10 +97,11 @@ export default function Header() {
           <div className="flex items-center gap-3">
             <Link
               href="/contact"
-              className="text-[#E9DFCD] hover:text-[#B89555] transition-colors flex items-center gap-1"
+              className="text-[#E9DFCD] hover:text-[#B89555] transition-colors flex items-center gap-1.5"
             >
-              <PhoneCall className="w-3 h-3 text-[#B89555]" />
-              <span className="hidden sm:inline">Curator Helpline:</span> +91 7686 288 411
+              <PhoneCall className="w-3 h-3 text-[#B89555] shrink-0" />
+              <span className="hidden sm:inline">Curator Helpline:</span>
+              <span>{contactInfo?.mobileNo || contactInfo?.phone || "+91 7686 288 411"}</span>
             </Link>
           </div>
         </div>

@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { artworks } from "@/data/artworks";
-import { artists } from "@/data/artists";
 import { useApp } from "@/context/AppContext";
 import { api, getImageUrl } from "@/lib/api";
 import ArtworkCard from "@/components/artwork/ArtworkCard";
@@ -65,15 +63,42 @@ export default function ArtworkDetailPage() {
   const [framingPreference, setFramingPreference] = useState("Traditional Teakwood Frame");
   const [customNotes, setCustomNotes] = useState("");
 
-  const [artwork, setArtwork] = useState(() => artworks.find((a) => a.slug === slug) || null);
+  const [artwork, setArtwork] = useState(null);
+  const [artist, setArtist] = useState(null);
+  const [relatedArtworks, setRelatedArtworks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    api.getArtworkByIdOrSlug(slug).then((backendArt) => {
-      if (isMounted && backendArt) {
-        setArtwork(backendArt);
-      }
-    });
+    api
+      .getArtworkByIdOrSlug(slug)
+      .then((backendArt) => {
+        if (!isMounted) return;
+        if (backendArt) {
+          setArtwork(backendArt);
+          Promise.all([
+            api.getArtworks({ categorySlug: backendArt.categorySlug }),
+            backendArt.artistSlug
+              ? api.getArtistBySlug(backendArt.artistSlug)
+              : Promise.resolve(null),
+          ]).then(([related, artArtist]) => {
+            if (!isMounted) return;
+            if (related) {
+              const artId = backendArt._id || backendArt.id;
+              setRelatedArtworks(
+                related.filter((a) => (a._id || a.id) !== artId).slice(0, 4)
+              );
+            }
+            if (artArtist) {
+              setArtist(artArtist);
+            }
+          });
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
@@ -85,6 +110,16 @@ export default function ArtworkDetailPage() {
       window.scrollTo(0, 0);
     }
   }, [artwork]);
+
+  if (loading) {
+    return (
+      <div className="py-24 text-center max-w-md mx-auto px-4">
+        <p className="text-xs uppercase tracking-widest text-[#B89555] font-semibold animate-pulse">
+          Loading Masterpiece...
+        </p>
+      </div>
+    );
+  }
 
   if (!artwork) {
     return (
@@ -103,14 +138,8 @@ export default function ArtworkDetailPage() {
     );
   }
 
-  const artist = artists.find((a) => a.slug === artwork.artistSlug);
-  const inWish = isInWishlist(artwork.id);
-  const selected = isSelected(artwork.id);
-
-  // Related artworks in same category or collection
-  const relatedArtworks = artworks
-    .filter((a) => a.id !== artwork.id && (a.categorySlug === artwork.categorySlug || a.artistSlug === artwork.artistSlug))
-    .slice(0, 4);
+  const inWish = isInWishlist(artwork._id || artwork.id);
+  const selected = isSelected(artwork._id || artwork.id);
 
   // Direct WhatsApp Commission Action
   const handleCommissionWhatsApp = () => {
@@ -192,11 +221,10 @@ export default function ArtworkDetailPage() {
                   <button
                     key={idx}
                     onClick={() => setActiveImageIndex(idx)}
-                    className={`w-20 h-24 rounded-sm overflow-hidden border-2 transition-all shrink-0 ${
-                      activeImageIndex === idx
-                        ? "border-[#682C2C] ring-2 ring-[#682C2C]/20"
-                        : "border-[#B89555]/30 opacity-70 hover:opacity-100"
-                    }`}
+                    className={`w-20 h-24 rounded-sm overflow-hidden border-2 transition-all shrink-0 ${activeImageIndex === idx
+                      ? "border-[#682C2C] ring-2 ring-[#682C2C]/20"
+                      : "border-[#B89555]/30 opacity-70 hover:opacity-100"
+                      }`}
                   >
                     <img src={getImageUrl(img)} alt="Angle preview" className="w-full h-full object-cover" />
                   </button>
@@ -327,17 +355,16 @@ export default function ArtworkDetailPage() {
                   className="flex-1 flex items-center justify-center gap-2.5 py-4 bg-[#25D366] hover:bg-[#1ebe57] text-[#0C381E] text-xs uppercase tracking-widest font-bold transition-all rounded-xs shadow-md hover:shadow-lg cursor-pointer"
                 >
                   <WhatsAppIcon className="w-5 h-5 text-[#0C381E]" />
-                  <span>Commission Artwork on WhatsApp</span>
+                  <span>Connect on WhatsApp</span>
                 </button>
 
                 {/* Multi-Artwork Selection Toggle */}
                 <button
                   onClick={() => toggleSelectArtwork(artwork)}
-                  className={`px-4 py-4 border rounded-xs text-xs uppercase tracking-wider font-semibold transition-all flex items-center justify-center gap-2 ${
-                    selected
-                      ? "border-[#25D366] bg-[#25D366]/10 text-[#0C381E]"
-                      : "border-[#B89555]/40 hover:border-[#682C2C] text-[#292522] bg-[#F4EFE6]"
-                  }`}
+                  className={`px-4 py-4 border rounded-xs text-xs uppercase tracking-wider font-semibold transition-all flex items-center justify-center gap-2 ${selected
+                    ? "border-[#25D366] bg-[#25D366]/10 text-[#0C381E]"
+                    : "border-[#B89555]/40 hover:border-[#682C2C] text-[#292522] bg-[#F4EFE6]"
+                    }`}
                   title={selected ? "Selected for commission" : "Add to selected artworks"}
                 >
                   <Check className={`w-4 h-4 ${selected ? "text-[#25D366] stroke-[3]" : "text-[#292522]/40"}`} />
@@ -347,11 +374,10 @@ export default function ArtworkDetailPage() {
                 {/* Wishlist Button */}
                 <button
                   onClick={() => toggleWishlist(artwork)}
-                  className={`p-4 border rounded-xs transition-colors shrink-0 ${
-                    inWish
-                      ? "border-[#682C2C] bg-[#682C2C]/10 text-[#682C2C]"
-                      : "border-[#B89555]/40 hover:border-[#682C2C] text-[#292522] bg-[#F4EFE6]"
-                  }`}
+                  className={`p-4 border rounded-xs transition-colors shrink-0 ${inWish
+                    ? "border-[#682C2C] bg-[#682C2C]/10 text-[#682C2C]"
+                    : "border-[#B89555]/40 hover:border-[#682C2C] text-[#292522] bg-[#F4EFE6]"
+                    }`}
                   aria-label="Wishlist"
                   title="Save to Wishlist"
                 >
@@ -398,11 +424,10 @@ export default function ArtworkDetailPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`pb-3 transition-colors shrink-0 ${
-                  activeTab === tab.id
-                    ? "border-b-2 border-[#682C2C] text-[#682C2C]"
-                    : "text-[#292522]/60 hover:text-[#292522]"
-                }`}
+                className={`pb-3 transition-colors shrink-0 ${activeTab === tab.id
+                  ? "border-b-2 border-[#682C2C] text-[#682C2C]"
+                  : "text-[#292522]/60 hover:text-[#292522]"
+                  }`}
               >
                 {tab.label}
               </button>
@@ -523,8 +548,8 @@ export default function ArtworkDetailPage() {
               </Link>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-              {relatedArtworks.map((item) => (
-                <ArtworkCard key={item.id} artwork={item} />
+              {relatedArtworks.map((item, idx) => (
+                <ArtworkCard key={item._id || item.id || item.slug || idx} artwork={item} />
               ))}
             </div>
           </div>
@@ -543,10 +568,10 @@ export default function ArtworkDetailPage() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
               {recentlyViewedArtworks
-                .filter((a) => a.id !== artwork.id)
+                .filter((a) => (a._id || a.id) !== (artwork._id || artwork.id))
                 .slice(0, 4)
-                .map((item) => (
-                  <ArtworkCard key={item.id} artwork={item} />
+                .map((item, idx) => (
+                  <ArtworkCard key={item._id || item.id || item.slug || idx} artwork={item} />
                 ))}
             </div>
           </div>
