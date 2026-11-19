@@ -1,8 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { artworks } from "@/data/artworks";
-import { getImageUrl } from "@/lib/api";
+import { api, getImageUrl } from "@/lib/api";
 import {
   WHATSAPP_PHONE,
   getArtworkWhatsAppUrl,
@@ -27,8 +26,8 @@ export function AppProvider({ children }) {
   // Wishlist state
   const [wishlist, setWishlist] = useState([]);
 
-  // Recently viewed IDs
-  const [recentlyViewedIds, setRecentlyViewedIds] = useState([]);
+  // Recently viewed artworks
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
 
   // Quick view modal
   const [quickViewArtwork, setQuickViewArtwork] = useState(null);
@@ -42,6 +41,51 @@ export function AppProvider({ children }) {
   // Toast notification
   const [toasts, setToasts] = useState([]);
 
+  // Atelier Contact & Social Media Links (dynamic from Admin Panel)
+  const [contactInfo, setContactInfo] = useState({
+    name: "Bundeli Kalavrat Atelier",
+    atelierTitle: "Bundeli Royal Atelier Master & Senior Conservator",
+    email: "curator@bundelikalavrat.com",
+    phone: "+91 7686 288 411",
+    mobileNo: "+91 7686 288 411",
+    whatsappNo: "917686288411",
+    bio: "Guardian of Bundelkhand's 400-year-old royal fresco and temple sculpture heritage.",
+    address: {
+      street: "Raja Ram Marg, Opposite Jahangir Mahal",
+      city: "Orchha",
+      state: "Madhya Pradesh",
+      pincode: "472246",
+      country: "India",
+      formatted:
+        "Raja Ram Marg, Opposite Jahangir Mahal, Orchha 472246, Niwari District, Madhya Pradesh, India",
+    },
+    socialLinks: {
+      instagram: "https://instagram.com/bundeli_kalavrat",
+      facebook: "https://facebook.com/bundelikalavrat",
+      twitter: "https://x.com/bundeliart",
+      youtube: "https://youtube.com/@bundelikalavrat",
+      linkedin: "",
+      pinterest: "",
+      website: "",
+    },
+  });
+
+  // Fetch live contact info from backend on mount
+  useEffect(() => {
+    let isMounted = true;
+    api
+      .getContactInfo()
+      .then((data) => {
+        if (isMounted && data) {
+          setContactInfo(data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Load from localStorage on mount
   useEffect(() => {
     try {
@@ -52,7 +96,12 @@ export function AppProvider({ children }) {
       if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
 
       const savedRecent = localStorage.getItem("bk_recent");
-      if (savedRecent) setRecentlyViewedIds(JSON.parse(savedRecent));
+      if (savedRecent) {
+        const parsed = JSON.parse(savedRecent);
+        if (Array.isArray(parsed)) {
+          setRecentlyViewed(parsed.filter((item) => item && typeof item === "object"));
+        }
+      }
 
       const savedUser = localStorage.getItem("bk_user");
       if (savedUser) setUser(JSON.parse(savedUser));
@@ -82,11 +131,11 @@ export function AppProvider({ children }) {
   // Save recently viewed
   useEffect(() => {
     try {
-      localStorage.setItem("bk_recent", JSON.stringify(recentlyViewedIds));
+      localStorage.setItem("bk_recent", JSON.stringify(recentlyViewed));
     } catch (e) {
       console.error(e);
     }
-  }, [recentlyViewedIds]);
+  }, [recentlyViewed]);
 
   // Toast trigger
   const addToast = (message, type = "success") => {
@@ -198,8 +247,10 @@ export function AppProvider({ children }) {
 
   const redirectToWhatsApp = (artwork, options = {}) => {
     try {
+      const activeWhatsApp = contactInfo?.whatsappNo || contactInfo?.mobileNo || WHATSAPP_PHONE;
       const url = getArtworkWhatsAppUrl(artwork, {
         customerName: user?.name,
+        phone: activeWhatsApp,
         ...options,
       });
       addToast(`Connecting to WhatsApp for "${artwork.title}"...`, "success");
@@ -244,8 +295,10 @@ export function AppProvider({ children }) {
       return;
     }
     try {
+      const activeWhatsApp = contactInfo?.whatsappNo || contactInfo?.mobileNo || WHATSAPP_PHONE;
       const url = getMultiArtworkWhatsAppUrl(cart, {
         customerName: user?.name,
+        phone: activeWhatsApp,
         ...options,
       });
       addToast(`Opening WhatsApp with ${cart.length} selected artworks...`, "success");
@@ -314,16 +367,35 @@ export function AppProvider({ children }) {
 
   // Recently viewed
   const recordView = (artwork) => {
-    if (!artwork || !artwork.id) return;
-    setRecentlyViewedIds((prev) => {
-      const filtered = prev.filter((id) => id !== artwork.id);
-      return [artwork.id, ...filtered].slice(0, 8);
+    if (!artwork) return;
+    const artId = artwork._id || artwork.id;
+    if (!artId) return;
+
+    setRecentlyViewed((prev) => {
+      const filtered = prev.filter((a) => (a._id || a.id) !== artId);
+      const cleanArt = {
+        _id: artwork._id || artwork.id,
+        id: artwork.id || artwork._id,
+        title: artwork.title,
+        slug: artwork.slug,
+        price: artwork.price,
+        images: artwork.images,
+        image: artwork.image,
+        artist: artwork.artist,
+        artistSlug: artwork.artistSlug,
+        category: artwork.category,
+        categorySlug: artwork.categorySlug,
+        style: artwork.style,
+        medium: artwork.medium,
+        dimensions: artwork.dimensions,
+        isNew: artwork.isNew,
+        inStock: artwork.inStock,
+      };
+      return [cleanArt, ...filtered].slice(0, 8);
     });
   };
 
-  const recentlyViewedArtworks = recentlyViewedIds
-    .map((id) => artworks.find((a) => a.id === id))
-    .filter(Boolean);
+  const recentlyViewedArtworks = recentlyViewed;
 
   // Quick View
   const openQuickView = (artwork) => {
@@ -549,6 +621,9 @@ export function AppProvider({ children }) {
         toasts,
         addToast,
         removeToast,
+        // Atelier Contact & Social Media Info
+        contactInfo,
+        setContactInfo,
       }}
     >
       {children}

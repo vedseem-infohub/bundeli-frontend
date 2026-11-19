@@ -1,28 +1,72 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { collections } from "@/data/collections";
-import { artworks } from "@/data/artworks";
+import { api, getImageUrl } from "@/lib/api";
 import ArtworkGrid from "@/components/artwork/ArtworkGrid";
-import { ChevronRight, Sparkles, ArrowRight } from "lucide-react";
+import { ChevronRight, Sparkles, ArrowRight, Loader2 } from "lucide-react";
 
 export default function CollectionDetailPage() {
   const params = useParams();
-  const { slug } = params;
+  const slug = params?.slug;
 
-  const collection = collections.find((c) => c.slug === slug);
-
+  const [collection, setCollection] = useState(null);
+  const [artworks, setArtworks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("featured");
+
+  useEffect(() => {
+    if (!slug) return;
+    let isMounted = true;
+
+    async function fetchCollectionData() {
+      try {
+        setLoading(true);
+        const [colData, arts] = await Promise.all([
+          api.getCollectionBySlug(slug),
+          api.getArtworks({ collectionSlug: slug }),
+        ]);
+
+        if (isMounted) {
+          setCollection(colData);
+          setArtworks(arts || (colData?.artworks || []));
+        }
+      } catch (err) {
+        console.error("Failed to load collection details:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    fetchCollectionData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="py-24 text-center max-w-md mx-auto px-4 flex flex-col items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#B89555] mb-4" />
+        <p className="font-serif text-sm tracking-widest text-[#292522]/70 uppercase">
+          Assembling Anthology...
+        </p>
+      </div>
+    );
+  }
 
   if (!collection) {
     return (
       <div className="py-24 text-center max-w-md mx-auto px-4">
         <h2 className="font-serif text-2xl font-bold text-[#292522]">Collection Not Found</h2>
+        <p className="text-xs text-[#292522]/70 mt-2">
+          The requested collection could not be found or has no active artworks.
+        </p>
         <Link
           href="/collections"
-          className="mt-6 inline-block px-6 py-2.5 bg-[#682C2C] text-[#F8F4EA] text-xs uppercase tracking-widest font-semibold rounded-sm"
+          className="mt-6 inline-block px-6 py-2.5 bg-[#682C2C] text-[#F8F4EA] text-xs uppercase tracking-widest font-semibold rounded-sm hover:bg-[#4A1B1B] transition-colors"
         >
           View All Collections
         </Link>
@@ -30,13 +74,10 @@ export default function CollectionDetailPage() {
     );
   }
 
-  // Filter artworks by collection slug
-  const collectionArtworks = artworks.filter((a) => a.collectionSlug === collection.slug);
-
-  const sortedArtworks = [...collectionArtworks].sort((a, b) => {
+  const sortedArtworks = [...artworks].sort((a, b) => {
     if (sortBy === "price-asc") return (a.price || 0) - (b.price || 0);
     if (sortBy === "price-desc") return (b.price || 0) - (a.price || 0);
-    if (sortBy === "newest") return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
+    if (sortBy === "newest") return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     return 0;
   });
 
@@ -60,7 +101,7 @@ export default function CollectionDetailPage() {
         <div className="relative rounded-sm overflow-hidden shadow-2xl border border-[#B89555]/30">
           <div className="relative h-72 sm:h-96 w-full">
             <img
-              src={collection.bannerImage}
+              src={getImageUrl(collection.bannerImage || collection.coverImage)}
               alt={collection.title}
               className="w-full h-full object-cover"
             />
@@ -69,7 +110,7 @@ export default function CollectionDetailPage() {
 
           <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10 text-[#F8F4EA] space-y-3">
             <span className="text-xs uppercase tracking-widest text-[#B89555] font-semibold">
-              {collection.tagline}
+              {collection.tagline || "Heritage Collection"}
             </span>
             <h1 className="font-serif text-3xl sm:text-5xl font-bold text-[#F8F4EA] leading-tight">
               {collection.title}
@@ -81,15 +122,17 @@ export default function CollectionDetailPage() {
         </div>
 
         {/* Curator Statement Box */}
-        <div className="p-6 sm:p-8 bg-[#F4EFE6] rounded-sm border-l-4 border-[#682C2C] space-y-2">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-[#682C2C] font-semibold">
-            <Sparkles className="w-3.5 h-3.5 text-[#B89555]" />
-            <span>Curator's Statement • {collection.curator}</span>
+        {collection.story && (
+          <div className="p-6 sm:p-8 bg-[#F4EFE6] rounded-sm border-l-4 border-[#682C2C] space-y-2">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-[#682C2C] font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-[#B89555]" />
+              <span>Curator&apos;s Statement {collection.curator ? `• ${collection.curator}` : ""}</span>
+            </div>
+            <p className="text-xs sm:text-sm text-[#292522]/80 leading-relaxed font-light italic">
+              &ldquo;{collection.story}&rdquo;
+            </p>
           </div>
-          <p className="text-xs sm:text-sm text-[#292522]/80 leading-relaxed font-light italic">
-            "{collection.story}"
-          </p>
-        </div>
+        )}
 
         {/* Collection Artworks Header & Sort */}
         <div className="flex items-center justify-between border-b border-[#B89555]/20 pb-4">
@@ -113,7 +156,13 @@ export default function CollectionDetailPage() {
         </div>
 
         {/* Collection Artworks Grid */}
-        <ArtworkGrid artworks={sortedArtworks} />
+        {sortedArtworks.length > 0 ? (
+          <ArtworkGrid artworks={sortedArtworks} />
+        ) : (
+          <div className="py-12 text-center text-[#292522]/60">
+            <p className="font-serif text-sm">No artworks currently assigned to this collection.</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -2,21 +2,27 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { artworks as defaultArtworks } from "@/data/artworks";
 import { api } from "@/lib/api";
 import ArtworkCard from "@/components/artwork/ArtworkCard";
 import { ArrowRight } from "lucide-react";
 
 export default function TrendingArtworks() {
-  const [artworksList, setArtworksList] = useState(defaultArtworks);
+  const [artworksList, setArtworksList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    api.getArtworks().then((backendArtworks) => {
-      if (isMounted && backendArtworks && backendArtworks.length > 0) {
-        setArtworksList(backendArtworks);
-      }
-    });
+    api
+      .getArtworks()
+      .then((backendArtworks) => {
+        if (isMounted) {
+          setArtworksList(backendArtworks || []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
@@ -24,6 +30,10 @@ export default function TrendingArtworks() {
 
   const trendingList = artworksList.filter((a) => a.isFeatured).slice(0, 8);
   const displayList = trendingList.length > 0 ? trendingList : artworksList.slice(0, 8);
+
+  if (!loading && displayList.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-8 sm:py-12 lg:py-14 bg-[#F4EFE6] border-b border-[#B89555]/20">

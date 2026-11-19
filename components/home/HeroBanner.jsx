@@ -5,29 +5,9 @@ import Link from "next/link";
 import { api, getImageUrl } from "@/lib/api";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const DEFAULT_POSTERS = [
-  {
-    id: "banner-1",
-    image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=2400&q=95",
-    alt: "Bundeli Kalavrat Cultural Art Poster",
-    link: "/shop",
-  },
-  {
-    id: "banner-2",
-    image: "https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2400&q=95",
-    alt: "Sacred Earth & Mineral Heritage Poster",
-    link: "/collections",
-  },
-  {
-    id: "banner-3",
-    image: "https://images.unsplash.com/photo-1582561424760-0321d75e81fa?auto=format&fit=crop&w=2400&q=95",
-    alt: "Master Artisans Royal Collection Poster",
-    link: "/heritage",
-  },
-];
-
 export default function HeroBanner() {
-  const [posters, setPosters] = useState(DEFAULT_POSTERS);
+  const [posters, setPosters] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -42,18 +22,30 @@ export default function HeroBanner() {
   // Fetch active banners from backend API on mount
   useEffect(() => {
     let isMounted = true;
-    api.getBanners().then((backendBanners) => {
-      if (isMounted && backendBanners && backendBanners.length > 0) {
-        const activeOnly = backendBanners.filter((b) => b.isActive !== false);
-        const mapped = (activeOnly.length > 0 ? activeOnly : backendBanners).map((b, idx) => ({
-          id: b._id || b.id || `b-${idx}`,
-          image: getImageUrl(b.image || b),
-          alt: b.alt || b.title || "Bundeli Kalavrat Cultural Art Banner",
-          link: b.link || "",
-        }));
-        setPosters(mapped);
-      }
-    });
+    api
+      .getBanners()
+      .then((backendBanners) => {
+        if (isMounted) {
+          if (backendBanners && backendBanners.length > 0) {
+            const activeOnly = backendBanners.filter((b) => b.isActive !== false);
+            const mapped = (activeOnly.length > 0 ? activeOnly : backendBanners).map(
+              (b, idx) => ({
+                id: b._id || b.id || `b-${idx}`,
+                image: getImageUrl(b.image || b),
+                alt: b.alt || b.title || "Bundeli Kalavrat Cultural Art Banner",
+                link: b.link || "",
+              })
+            );
+            setPosters(mapped);
+          } else {
+            setPosters([]);
+          }
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
@@ -62,10 +54,12 @@ export default function HeroBanner() {
   const totalSlides = posters.length;
 
   const nextSlide = () => {
+    if (totalSlides === 0) return;
     setCurrentSlide((prev) => (prev + 1) % totalSlides);
   };
 
   const prevSlide = () => {
+    if (totalSlides === 0) return;
     setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
   };
 
@@ -175,6 +169,20 @@ export default function HeroBanner() {
       pauseTemporarily();
     }
   };
+
+  if (loading && posters.length === 0) {
+    return (
+      <section className="relative w-full h-[60vh] sm:h-[75vh] lg:h-[85vh] min-h-[420px] max-h-[850px] bg-[#292522] flex items-center justify-center">
+        <div className="w-12 h-12 rounded-sm bg-[#682C2C] border border-[#B89555] flex items-center justify-center font-serif text-lg font-bold text-[#F8F4EA] shadow-xl animate-pulse">
+          BK
+        </div>
+      </section>
+    );
+  }
+
+  if (!loading && posters.length === 0) {
+    return null;
+  }
 
   return (
     <section

@@ -12,120 +12,32 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-const DEFAULT_CELEBRITIES = [
-  {
-    id: "celeb-1",
-    celebrityName: "Saif Ali Khan & Kareena Kapoor Khan",
-    celebrityTitle: "Royal Patrons & Cinema Icons",
-    location: "Pataudi Estate & Mumbai",
-    artworkTitle: "Royal Durbar of Orchha: Celestial Assembly",
-    artist: "Pt. Ramnarayan Sharma",
-    medium: "Natural Mineral Pigments & 24K Gold Leaf on Handmade Wasli Paper",
-    dimensions: "36 x 48 inches",
-    year: "2024",
-    image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=1200&q=85",
-    quote:
-      "The nuanced 17th-century Bundeli court portraiture and hand-ground cinnabar pigments hold a timeless architectural grace that anchors our ancestral gallery walls.",
-    artworkSlug: "royal-durbar-of-orchha-fresco",
-    tag: "Bespoke Royal Commission",
-  },
-  {
-    id: "celeb-2",
-    celebrityName: "Amitabh Bachchan",
-    celebrityTitle: "Legendary Actor & Cultural Connoisseur",
-    location: "Jalsa Residence, Mumbai",
-    artworkTitle: "The Sacred Chhatris of Orchha at Sunset",
-    artist: "Devaki Bai Prajapati",
-    medium: "Ken River Silt Clay, Natural Ochre & 22K Gold Dust on Wasli",
-    dimensions: "40 x 52 inches",
-    year: "2023",
-    image: "https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1200&q=85",
-    quote:
-      "A monumental tribute to the spiritual resonance of the Betwa riverbank. The master artisans have preserved our country's ancient aesthetic soul with astonishing purity.",
-    artworkSlug: "sanjhi-sacred-peacock-relief",
-    tag: "Private Living Estate Acquisition",
-  },
-  {
-    id: "celeb-3",
-    celebrityName: "Shabana Azmi & Javed Akhtar",
-    celebrityTitle: "Celebrated Literary & Cinematic Luminaries",
-    location: "Khandala Heritage Retreat",
-    artworkTitle: "Vindhyan Forest: The Golden Deer of Betwa",
-    artist: "Kailash Chand Verma",
-    medium: "Stone Pigments, Lapis Lazuli & Organic Gum on Archival Cotton Rag",
-    dimensions: "30 x 42 inches",
-    year: "2024",
-    image: "https://images.unsplash.com/photo-1582561424760-0321d75e81fa?auto=format&fit=crop&w=1200&q=85",
-    quote:
-      "Every brushstroke in this Bundelkhand forest folklore composition sings with poetic melody. It is living Indian folklore at its finest.",
-    artworkSlug: "royal-durbar-of-orchha-fresco",
-    tag: "Curated Literary Saloon Piece",
-  },
-  {
-    id: "celeb-4",
-    celebrityName: "Mira Nair",
-    celebrityTitle: "Academy Award-Nominated Film Director",
-    location: "New York & New Delhi",
-    artworkTitle: "Sanjhi: The Sacred Peacock of Chhatarpur",
-    artist: "Devaki Bai Prajapati",
-    medium: "Hand-Cut Stencil Relief with Ken River Natural Minerals",
-    dimensions: "28 x 36 inches",
-    year: "2023",
-    image: "https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?auto=format&fit=crop&w=1200&q=85",
-    quote:
-      "The rhythmic geometric grace of Bundeli Sanjhi wall reliefs has an electric modern pulse while remaining deeply grounded in maternal heritage.",
-    artworkSlug: "sanjhi-sacred-peacock-relief",
-    tag: "International Private Study Collection",
-  },
-  {
-    id: "celeb-5",
-    celebrityName: "Ustad Amjad Ali Khan",
-    celebrityTitle: "Sarod Virtuoso & Padma Vibhushan",
-    location: "New Delhi Residence",
-    artworkTitle: "Ragas of the Bundela Court: Megh Malhar",
-    artist: "Pt. Ramnarayan Sharma",
-    medium: "Tempera Miniature with Powdered Malachite on Handmade Wasli",
-    dimensions: "24 x 32 inches",
-    year: "2024",
-    image: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1200&q=85",
-    quote:
-      "Visual music in its highest form. The devotion of the Bundelkhand court miniaturist matches the discipline of a classical riyaaz.",
-    artworkSlug: "royal-durbar-of-orchha-fresco",
-    tag: "Classical Maestro Acquisition",
-  },
-  {
-    id: "celeb-6",
-    celebrityName: "Gauri Khan",
-    celebrityTitle: "Luxury Architectural Designer & Producer",
-    location: "Mannat Private Lounge, Mumbai",
-    artworkTitle: "Celestial Raslila of Raja Mahal Wall Fresco",
-    artist: "Pt. Ramnarayan Sharma",
-    medium: "24K Gold Leaf Inlay, Indigo & Cinnabar on Wasli Canvas",
-    dimensions: "44 x 60 inches",
-    year: "2024",
-    image: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1200&q=85",
-    quote:
-      "Authentic heritage paintings bring an irreplaceable warmth and grandeur to contemporary architectural spaces that modern decor simply cannot replicate.",
-    artworkSlug: "royal-durbar-of-orchha-fresco",
-    tag: "Custom Architectural Commission",
-  },
-];
-
 export default function CelebrityPaintings() {
   const { openEnquiry } = useApp();
-  const [celebritiesList, setCelebritiesList] = useState(DEFAULT_CELEBRITIES);
+  const [celebritiesList, setCelebritiesList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    api.getCelebrityPaintings().then((backendCelebrities) => {
-      if (isMounted && backendCelebrities && backendCelebrities.length > 0) {
-        setCelebritiesList(backendCelebrities);
-      }
-    });
+    api
+      .getCelebrityPaintings()
+      .then((backendCelebrities) => {
+        if (isMounted) {
+          setCelebritiesList(backendCelebrities || []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
   }, []);
+
+  if (!loading && celebritiesList.length === 0) {
+    return null;
+  }
 
   const handleEnquiry = (item) => {
     openEnquiry({

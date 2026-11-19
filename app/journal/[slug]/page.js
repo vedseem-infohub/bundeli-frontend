@@ -3,39 +3,78 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { journalArticles as defaultArticles } from "@/data/journal";
-import { artworks as defaultArtworks } from "@/data/artworks";
 import { api, getImageUrl } from "@/lib/api";
 import ArtworkCard from "@/components/artwork/ArtworkCard";
-import { Clock, ChevronRight, ArrowRight, BookOpen } from "lucide-react";
+import { Clock, ChevronRight, ArrowRight, BookOpen, Loader2 } from "lucide-react";
 
 export default function JournalArticlePage() {
   const params = useParams();
-  const { slug } = params;
+  const slug = params?.slug;
 
-  const [article, setArticle] = useState(
-    () => defaultArticles.find((a) => a.slug === slug) || null
-  );
+  const [article, setArticle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [otherArticles, setOtherArticles] = useState([]);
+  const [relatedArtworks, setRelatedArtworks] = useState([]);
 
   useEffect(() => {
+    if (!slug) return;
     let isMounted = true;
-    api.getBlogByIdOrSlug(slug).then((backendBlog) => {
-      if (isMounted && backendBlog) {
-        setArticle(backendBlog);
+
+    async function loadData() {
+      try {
+        setLoading(true);
+        const [blogData, allBlogs, arts] = await Promise.all([
+          api.getBlogByIdOrSlug(slug),
+          api.getBlogs(),
+          api.getArtworks({ limit: 4 }),
+        ]);
+
+        if (isMounted) {
+          setArticle(blogData);
+          if (allBlogs) {
+            setOtherArticles(
+              allBlogs.filter((b) => b.slug !== slug && (b._id || b.id) !== slug).slice(0, 2)
+            );
+          }
+          if (arts) {
+            setRelatedArtworks(arts.slice(0, 3));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load article:", err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
-    });
+    }
+
+    loadData();
+
     return () => {
       isMounted = false;
     };
   }, [slug]);
 
+  if (loading) {
+    return (
+      <div className="py-24 text-center max-w-md mx-auto px-4 flex flex-col items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#B89555] mb-4" />
+        <p className="font-serif text-sm tracking-widest text-[#292522]/70 uppercase">
+          Opening Manuscript...
+        </p>
+      </div>
+    );
+  }
+
   if (!article) {
     return (
       <div className="py-24 text-center max-w-md mx-auto px-4">
         <h2 className="font-serif text-2xl font-bold text-[#292522]">Article Not Found</h2>
+        <p className="text-xs text-[#292522]/70 mt-2">
+          The requested essay could not be found or has been moved.
+        </p>
         <Link
           href="/journal"
-          className="mt-6 inline-block px-6 py-2.5 bg-[#682C2C] text-[#F8F4EA] text-xs uppercase tracking-widest font-semibold rounded-sm"
+          className="mt-6 inline-block px-6 py-2.5 bg-[#682C2C] text-[#F8F4EA] text-xs uppercase tracking-widest font-semibold rounded-sm hover:bg-[#4A1B1B] transition-colors"
         >
           Return to Journal
         </Link>
@@ -43,17 +82,7 @@ export default function JournalArticlePage() {
     );
   }
 
-  // Get matching related artworks
-  const related = (article.relatedArtworks || [])
-    .map((id) => defaultArtworks.find((a) => a.id === id || a.slug === id))
-    .filter(Boolean);
-
-  // Other articles
-  const otherArticles = defaultArticles
-    .filter((a) => a.slug !== article.slug)
-    .slice(0, 2);
-
-  const coverImg = getImageUrl(article.coverImage || article.image || article);
+  const coverImg = getImageUrl(article.coverImage || article.image);
 
   return (
     <article className="py-8 lg:py-16 bg-[#F8F4EA] min-h-screen">
@@ -84,9 +113,21 @@ export default function JournalArticlePage() {
           </h1>
 
           <div className="flex items-center justify-center gap-3 text-xs text-[#72765A] pt-2">
-            <span>By <strong>{article.author || "Bundeli Guild"}</strong> ({article.authorRole || "Senior Historian"})</span>
+            <span>
+              By <strong>{article.author || "Bundeli Guild"}</strong>{" "}
+              {article.authorRole ? `(${article.authorRole})` : ""}
+            </span>
             <span>•</span>
-            <span>{article.date}</span>
+            <span>
+              {article.date ||
+                (article.createdAt
+                  ? new Date(article.createdAt).toLocaleDateString("en-IN", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : "Recent")}
+            </span>
             <span>•</span>
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
@@ -105,9 +146,9 @@ export default function JournalArticlePage() {
         </div>
 
         {/* Article Summary Lead */}
-        {article.summary && (
+        {(article.summary || article.excerpt) && (
           <div className="p-6 bg-[#F4EFE6] rounded-sm border-l-4 border-[#682C2C] text-sm sm:text-base font-serif italic text-[#292522]/90 leading-relaxed">
-            "{article.summary}"
+            &ldquo;{article.summary || article.excerpt}&rdquo;
           </div>
         )}
 
@@ -134,7 +175,12 @@ export default function JournalArticlePage() {
                 return (
                   <ul key={index} className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
                     {items.map((item, i) => (
-                      <li key={i} dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") }} />
+                      <li
+                        key={i}
+                        dangerouslySetInnerHTML={{
+                          __html: item.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"),
+                        }}
+                      />
                     ))}
                   </ul>
                 );
@@ -146,13 +192,13 @@ export default function JournalArticlePage() {
         )}
 
         {/* Related Artworks */}
-        {related.length > 0 && (
+        {relatedArtworks.length > 0 && (
           <div className="border-t border-[#B89555]/30 pt-12">
             <h3 className="font-serif text-2xl font-bold text-[#292522] mb-6">
-              Artworks Mentioned in This Essay
+              Artworks From the Royal Collections
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {related.map((art) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {relatedArtworks.map((art) => (
                 <ArtworkCard key={art._id || art.id} artwork={art} />
               ))}
             </div>
@@ -174,7 +220,7 @@ export default function JournalArticlePage() {
                 >
                   <div>
                     <span className="text-[10px] uppercase font-semibold text-[#B89555]">
-                      {other.category}
+                      {other.category || "Heritage"}
                     </span>
                     <h4 className="font-serif text-base font-bold text-[#292522] group-hover:text-[#682C2C] mt-1 line-clamp-1">
                       {other.title}

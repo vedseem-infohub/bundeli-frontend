@@ -3,8 +3,6 @@
 import React, { useState, useMemo, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { artworks } from "@/data/artworks";
-import { categories } from "@/data/categories";
 import { api } from "@/lib/api";
 import ArtworkGrid from "@/components/artwork/ArtworkGrid";
 import ArtworkFilters from "@/components/artwork/ArtworkFilters";
@@ -37,16 +35,24 @@ function ShopContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  const [allArtworks, setAllArtworks] = useState(artworks);
+  const [allArtworks, setAllArtworks] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch dynamic artworks from backend
+  // Fetch dynamic artworks and categories from backend
   useEffect(() => {
     let isMounted = true;
-    api.getArtworks().then((backendArtworks) => {
-      if (isMounted && backendArtworks && backendArtworks.length > 0) {
-        setAllArtworks(backendArtworks);
-      }
-    });
+    Promise.all([api.getArtworks(), api.getCategories()])
+      .then(([backendArtworks, backendCategories]) => {
+        if (isMounted) {
+          setAllArtworks(backendArtworks || []);
+          if (backendCategories) setCategories(backendCategories);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
@@ -166,7 +172,7 @@ function ShopContent() {
   const paginatedArtworks = sortedArtworks.slice(0, currentPage * itemsPerPage);
 
   const currentCategoryName = filters.category
-    ? categories.find((c) => c.slug === filters.category)?.name
+    ? categories.find((c) => (c.slug || c._id) === filters.category)?.name || filters.category
     : null;
 
   return (
@@ -258,6 +264,7 @@ function ShopContent() {
               setFilters={setFilters}
               resetFilters={resetFilters}
               totalResults={sortedArtworks.length}
+              categories={categories}
             />
           </aside>
 
@@ -310,6 +317,7 @@ function ShopContent() {
                 totalResults={sortedArtworks.length}
                 isMobileDrawer={true}
                 onCloseMobile={() => setIsMobileFiltersOpen(false)}
+                categories={categories}
               />
             </div>
           </div>

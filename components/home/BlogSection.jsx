@@ -2,26 +2,36 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { journalArticles as defaultArticles } from "@/data/journal";
 import { api, getImageUrl } from "@/lib/api";
 import { Clock, Calendar, ArrowRight, Feather } from "lucide-react";
 
 export default function BlogSection() {
-  const [articlesList, setArticlesList] = useState(defaultArticles);
+  const [articlesList, setArticlesList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    api.getBlogs().then((backendBlogs) => {
-      if (isMounted && backendBlogs && backendBlogs.length > 0) {
-        setArticlesList(backendBlogs);
-      }
-    });
+    api
+      .getBlogs()
+      .then((backendBlogs) => {
+        if (isMounted) {
+          setArticlesList(backendBlogs || []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
   }, []);
 
   const articles = articlesList.slice(0, 3);
+
+  if (!loading && articles.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-8 sm:py-12 lg:py-14 bg-[#F8F4EA] border-b border-[#B89555]/20 relative overflow-hidden">

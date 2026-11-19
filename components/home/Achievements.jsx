@@ -28,114 +28,60 @@ const ICON_MAP = {
   Scroll,
 };
 
-const DEFAULT_STATS = [
-  {
-    id: "stat-1",
-    number: "450+",
-    label: "Certified Masterpieces",
-    detail: "Archival artworks authenticated with physical signature certificates of lineage.",
-    icon: Award,
-  },
-  {
-    id: "stat-2",
-    number: "85+",
-    label: "Artisan Lineages Sustained",
-    detail: "4th and 5th generation hereditary painter and sculptor families supported in Bundelkhand.",
-    icon: Users,
-  },
-  {
-    id: "stat-3",
-    number: "18+",
-    label: "Countries of Global Collectors",
-    detail: "White-glove insured delivery to private collectors and galleries across 5 continents.",
-    icon: Globe,
-  },
-  {
-    id: "stat-4",
-    number: "300+",
-    label: "Years of Court Lineage",
-    detail: "Reviving 17th-century Raja Mahal and Datia palace fresco traditions with mineral pigments.",
-    icon: Landmark,
-  },
-];
-
-const DEFAULT_MILESTONES = [
-  {
-    id: "mile-1",
-    badge: "NATIONAL MASTER ARTISANS",
-    title: "Presidential & National Honors",
-    description:
-      "Affiliated master artists have been conferred prestigious National Awards for reviving Orchha court frescoes and lost-wax Dhokra bronze casting.",
-    icon: Trophy,
-  },
-  {
-    id: "mile-2",
-    badge: "LEGAL PROVENANCE",
-    title: "100% Certified Physical Dossier",
-    description:
-      "Every single artwork leaves our atelier accompanied by an authenticated legal certificate with embossed seal, artist signature, and studio registry entry.",
-    icon: ShieldCheck,
-  },
-  {
-    id: "mile-3",
-    badge: "MUSEUM CONSERVATION",
-    title: "Natural Stone Minerals & 24K Gold",
-    description:
-      "Zero synthetic chemicals. Strictly authentic lapis lazuli, malachite, cinnabar, Ken river silt clay, and pure gold foil on handmade wasli.",
-    icon: Sparkles,
-  },
-  {
-    id: "mile-4",
-    badge: "DIRECT PATRONAGE",
-    title: "Direct Guild Empowerment",
-    description:
-      "By eliminating layers of intermediaries, over 70% of collection proceeds flow directly into artisan welfare, apprentice training, and heritage workshops.",
-    icon: CheckCircle2,
-  },
-];
-
 export default function Achievements() {
-  const [stats, setStats] = useState(DEFAULT_STATS);
-  const [milestones, setMilestones] = useState(DEFAULT_MILESTONES);
+  const [stats, setStats] = useState([]);
+  const [milestones, setMilestones] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    api.getAchievements().then((backendData) => {
-      if (isMounted && backendData && backendData.length > 0) {
-        const fetchedStats = backendData.filter((item) => item.type === "stat");
-        const fetchedMilestones = backendData.filter(
-          (item) => item.type === "milestone"
-        );
+    api
+      .getAchievements()
+      .then((backendData) => {
+        if (isMounted) {
+          if (backendData && backendData.length > 0) {
+            const fetchedStats = backendData.filter((item) => item.type === "stat");
+            const fetchedMilestones = backendData.filter(
+              (item) => item.type === "milestone"
+            );
 
-        if (fetchedStats.length > 0) {
-          setStats(
-            fetchedStats.map((s, idx) => ({
-              id: s._id || s.id || `stat-${idx}`,
-              number: s.number,
-              label: s.label || s.title,
-              detail: s.detail || s.description,
-              icon: ICON_MAP[s.icon] || Award,
-            }))
-          );
-        }
+            setStats(
+              fetchedStats.map((s, idx) => ({
+                id: s._id || s.id || `stat-${idx}`,
+                number: s.number,
+                label: s.label || s.title,
+                detail: s.detail || s.description,
+                icon: ICON_MAP[s.icon] || Award,
+              }))
+            );
 
-        if (fetchedMilestones.length > 0) {
-          setMilestones(
-            fetchedMilestones.map((m, idx) => ({
-              id: m._id || m.id || `mile-${idx}`,
-              badge: m.badge || "HERITAGE RECOGNITION",
-              title: m.title || m.label,
-              description: m.description || m.detail,
-              icon: ICON_MAP[m.icon] || Trophy,
-            }))
-          );
+            setMilestones(
+              fetchedMilestones.map((m, idx) => ({
+                id: m._id || m.id || `mile-${idx}`,
+                badge: m.badge || "HERITAGE RECOGNITION",
+                title: m.title || m.label,
+                description: m.description || m.detail,
+                icon: ICON_MAP[m.icon] || Trophy,
+              }))
+            );
+          } else {
+            setStats([]);
+            setMilestones([]);
+          }
+          setLoading(false);
         }
-      }
-    });
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
   }, []);
+
+  if (!loading && stats.length === 0 && milestones.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-8 sm:py-12 lg:py-14 bg-[#FAF7F0] border-b border-[#B89555]/20 relative overflow-hidden">
@@ -170,11 +116,11 @@ export default function Achievements() {
 
         {/* 4 Prominent Stat Counters */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          {stats.map((stat) => {
+          {stats.map((stat, idx) => {
             const Icon = stat.icon;
             return (
               <div
-                key={stat.id}
+                key={stat._id || stat.id || stat.label || idx}
                 className="bg-[#F8F4EA] border border-[#B89555]/30 rounded-sm p-6 sm:p-8 flex flex-col justify-between shadow-art hover:shadow-art-hover transition-all duration-300 hover:-translate-y-1 group"
               >
                 <div className="flex items-center justify-between mb-4">
@@ -204,11 +150,11 @@ export default function Achievements() {
 
         {/* Heritage Honors Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 sm:mb-16">
-          {milestones.map((m) => {
+          {milestones.map((m, idx) => {
             const Icon = m.icon;
             return (
               <div
-                key={m.id}
+                key={m._id || m.id || m.title || idx}
                 className="bg-[#F8F4EA] border border-[#B89555]/25 rounded-sm p-6 flex flex-col justify-between shadow-xs hover:border-[#682C2C] transition-colors"
               >
                 <div>

@@ -1,14 +1,28 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { categories } from "@/data/categories";
-import { collections } from "@/data/collections";
-import { artworks } from "@/data/artworks";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { api, getImageUrl } from "@/lib/api";
+import { ArrowRight, Sparkles, Loader2 } from "lucide-react";
 
 export function ShopMegaMenu({ onClose }) {
-  const featuredArtwork = artworks.find((a) => a.isFeatured && a.slug.includes("orchha")) || artworks[0];
+  const [categories, setCategories] = useState([]);
+  const [featuredArtwork, setFeaturedArtwork] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([api.getCategories(), api.getArtworks({ limit: 1 })])
+      .then(([cats, arts]) => {
+        if (!isMounted) return;
+        if (cats) setCategories(cats);
+        if (arts && arts.length > 0) setFeaturedArtwork(arts[0]);
+      })
+      .catch((err) => console.error("MegaMenu error:", err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const artStyles = [
     { name: "Bundelkhand Royal Fresco", desc: "Tempera & 24K gold miniatures of Orchha", filter: "Bundelkhand Royal Fresco" },
@@ -39,16 +53,18 @@ export function ShopMegaMenu({ onClose }) {
             {categories.map((c, idx) => (
               <li key={c._id || c.id || c.slug || idx}>
                 <Link
-                  href={`/shop?category=${c.slug}`}
+                  href={`/shop?category=${c.slug || c._id}`}
                   onClick={onClose}
                   className="group flex items-baseline justify-between text-[#292522] hover:text-[#682C2C] transition-colors"
                 >
                   <span className="font-serif text-sm font-medium group-hover:translate-x-1 transition-transform inline-block">
                     {c.name}
                   </span>
-                  <span className="text-[11px] text-[#72765A]">
-                    {c.artworkCount} works
-                  </span>
+                  {c.artworkCount !== undefined && (
+                    <span className="text-[11px] text-[#72765A]">
+                      {c.artworkCount} works
+                    </span>
+                  )}
                 </Link>
               </li>
             ))}
@@ -81,37 +97,43 @@ export function ShopMegaMenu({ onClose }) {
         <div className="col-span-4 pl-2">
           <div className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-[#B89555] font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Curator's Spotlight</span>
+            <span>Curator&apos;s Spotlight</span>
           </div>
 
-          <Link
-            href={`/art/${featuredArtwork.slug}`}
-            onClick={onClose}
-            className="group block bg-[#F4EFE6] p-3 rounded-sm border border-[#B89555]/20 hover:border-[#B89555] transition-all"
-          >
-            <div className="relative aspect-16/10 overflow-hidden rounded-sm mb-3">
-              <img
-                src={featuredArtwork.images[0]}
-                alt={featuredArtwork.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <span className="absolute top-2 left-2 bg-[#682C2C] text-[#F8F4EA] text-[10px] uppercase font-semibold px-2 py-0.5">
-                Featured
-              </span>
+          {featuredArtwork ? (
+            <Link
+              href={`/art/${featuredArtwork.slug || featuredArtwork._id}`}
+              onClick={onClose}
+              className="group block bg-[#F4EFE6] p-3 rounded-sm border border-[#B89555]/20 hover:border-[#B89555] transition-all"
+            >
+              <div className="relative aspect-16/10 overflow-hidden rounded-sm mb-3">
+                <img
+                  src={getImageUrl(featuredArtwork.images || featuredArtwork.image)}
+                  alt={featuredArtwork.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <span className="absolute top-2 left-2 bg-[#682C2C] text-[#F8F4EA] text-[10px] uppercase font-semibold px-2 py-0.5">
+                  Featured
+                </span>
+              </div>
+              <h5 className="font-serif text-sm font-bold text-[#292522] group-hover:text-[#682C2C] truncate transition-colors">
+                {featuredArtwork.title}
+              </h5>
+              <p className="text-xs text-[#72765A] mt-0.5">{featuredArtwork.artist}</p>
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#B89555]/15">
+                <span className="text-[11px] font-semibold text-[#682C2C] uppercase tracking-wider">
+                  Bespoke Commission
+                </span>
+                <span className="text-[11px] text-[#292522]/60 group-hover:underline flex items-center gap-1">
+                  Explore Artwork <ArrowRight className="w-3 h-3" />
+                </span>
+              </div>
+            </Link>
+          ) : (
+            <div className="p-6 bg-[#F4EFE6] rounded-sm border border-[#B89555]/20 text-center text-xs text-[#292522]/60">
+              Explore our full catalog of heritage fine art.
             </div>
-            <h5 className="font-serif text-sm font-bold text-[#292522] group-hover:text-[#682C2C] truncate transition-colors">
-              {featuredArtwork.title}
-            </h5>
-            <p className="text-xs text-[#72765A] mt-0.5">{featuredArtwork.artist}</p>
-            <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#B89555]/15">
-              <span className="text-[11px] font-semibold text-[#682C2C] uppercase tracking-wider">
-                Bespoke Commission
-              </span>
-              <span className="text-[11px] text-[#292522]/60 group-hover:underline flex items-center gap-1">
-                Explore Artwork <ArrowRight className="w-3 h-3" />
-              </span>
-            </div>
-          </Link>
+          )}
         </div>
       </div>
     </div>
@@ -119,6 +141,21 @@ export function ShopMegaMenu({ onClose }) {
 }
 
 export function CollectionsMegaMenu({ onClose }) {
+  const [collections, setCollections] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getCollections()
+      .then((cols) => {
+        if (isMounted && cols) setCollections(cols);
+      })
+      .catch((err) => console.error("CollectionsMegaMenu error:", err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div className="absolute top-full left-0 w-full bg-[#F8F4EA] border-b border-[#B89555]/30 shadow-2xl z-40 py-8 px-6 lg:px-12 animate-in fade-in slide-in-from-top-2 duration-200">
       <div className="max-w-7xl mx-auto">
@@ -140,7 +177,7 @@ export function CollectionsMegaMenu({ onClose }) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
           {collections.map((col, idx) => (
             <Link
               key={col._id || col.id || col.slug || idx}
@@ -150,13 +187,15 @@ export function CollectionsMegaMenu({ onClose }) {
             >
               <div className="relative aspect-4/3 overflow-hidden rounded-sm mb-2.5">
                 <img
-                  src={col.coverImage}
+                  src={getImageUrl(col.coverImage || col.bannerImage)}
                   alt={col.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <span className="absolute bottom-1.5 right-1.5 bg-[#292522]/80 text-[#F8F4EA] text-[10px] px-1.5 py-0.5 rounded-xs">
-                  {col.artworkCount} works
-                </span>
+                {col.artworkCount !== undefined && (
+                  <span className="absolute bottom-1.5 right-1.5 bg-[#292522]/80 text-[#F8F4EA] text-[10px] px-1.5 py-0.5 rounded-xs">
+                    {col.artworkCount} works
+                  </span>
+                )}
               </div>
               <h5 className="font-serif text-xs font-bold text-[#292522] group-hover:text-[#682C2C] line-clamp-1 transition-colors">
                 {col.title}

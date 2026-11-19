@@ -12,11 +12,11 @@ import {
   MessageSquareQuote,
   Check,
 } from "lucide-react";
-import { initialReviews } from "@/data/reviews";
 import { api } from "@/lib/api";
 
 export default function ReviewsSection() {
-  const [reviews, setReviews] = useState(initialReviews);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filterRating, setFilterRating] = useState("all");
   const [visibleCount, setVisibleCount] = useState(6);
 
@@ -31,28 +31,20 @@ export default function ReviewsSection() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Load reviews from backend API (and merge with local cache)
+  // Load reviews from backend API
   useEffect(() => {
     let isMounted = true;
-    api.getReviews().then((backendReviews) => {
-      if (isMounted && backendReviews && backendReviews.length > 0) {
-        setReviews(backendReviews);
-      } else {
-        try {
-          const stored = localStorage.getItem("bk_patron_reviews");
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              const userIds = new Set(parsed.map((r) => r._id || r.id));
-              const filteredInitial = initialReviews.filter((r) => !userIds.has(r.id));
-              setReviews([...parsed, ...filteredInitial]);
-            }
-          }
-        } catch (err) {
-          console.warn("Could not load stored reviews:", err);
+    api
+      .getReviews()
+      .then((backendReviews) => {
+        if (isMounted) {
+          setReviews(backendReviews || []);
+          setLoading(false);
         }
-      }
-    });
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };

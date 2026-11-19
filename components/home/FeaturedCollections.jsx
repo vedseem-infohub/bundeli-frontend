@@ -1,16 +1,43 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { collections } from "@/data/collections";
+import { api } from "@/lib/api";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 export default function FeaturedCollections() {
-  const heroCol = collections[0]; // The Bundelkhand Heritage Collection
-  const folkCol = collections[1]; // Colours of Indian Folk Art
-  const sacredCol = collections[2]; // Sacred Stories
-  const natureCol = collections[3]; // Nature and Rural Life
-  const contemporaryCol = collections[4]; // Contemporary Expressions
+  const [collectionsList, setCollectionsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    api
+      .getCollections()
+      .then((data) => {
+        if (isMounted) {
+          setCollectionsList(data || []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (!loading && collectionsList.length === 0) {
+    return null;
+  }
+
+  const heroCol = collectionsList[0];
+  const folkCol = collectionsList[1] || heroCol;
+  const sacredCol = collectionsList[2] || heroCol;
+  const natureCol = collectionsList[3] || heroCol;
+  const contemporaryCol = collectionsList[4] || heroCol;
+
+  if (!heroCol) return null;
 
   return (
     <section className="py-8 sm:py-12 lg:py-14 bg-[#F8F4EA] border-b border-[#B89555]/20">

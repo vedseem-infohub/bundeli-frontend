@@ -1,12 +1,37 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { journalArticles } from "@/data/journal";
+import { api, getImageUrl } from "@/lib/api";
 import { ArrowRight, Clock } from "lucide-react";
 
 export default function JournalSection() {
-  const articles = journalArticles.slice(0, 3);
+  const [articlesList, setArticlesList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    api
+      .getBlogs()
+      .then((backendBlogs) => {
+        if (isMounted) {
+          setArticlesList(backendBlogs || []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const articles = articlesList.slice(0, 3);
+
+  if (!loading && articles.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-8 sm:py-12 lg:py-14 bg-[#F4EFE6] border-b border-[#B89555]/20">

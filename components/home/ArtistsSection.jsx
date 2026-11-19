@@ -1,12 +1,37 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { artists } from "@/data/artists";
+import { api, getImageUrl } from "@/lib/api";
 import { ArrowRight, MapPin, Award, Palette } from "lucide-react";
 
 export default function ArtistsSection() {
-  const featuredArtists = artists.slice(0, 4);
+  const [artistsList, setArtistsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    api
+      .getArtists()
+      .then((backendArtists) => {
+        if (isMounted) {
+          setArtistsList(backendArtists || []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (!loading && artistsList.length === 0) {
+    return null;
+  }
+
+  const featuredArtists = artistsList.slice(0, 4);
 
   return (
     <section className="py-8 sm:py-12 lg:py-14 bg-[#F8F4EA] border-b border-[#B89555]/20">
@@ -27,7 +52,7 @@ export default function ArtistsSection() {
             href="/artists"
             className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[#682C2C] hover:text-[#B89555] border-b border-[#682C2C] pb-1 transition-colors mt-4 md:mt-0 group"
           >
-            <span>View All Master Artists ({artists.length})</span>
+            <span>View All Master Artists ({artistsList.length})</span>
             <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform" />
           </Link>
         </div>
@@ -36,14 +61,14 @@ export default function ArtistsSection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {featuredArtists.map((artist) => (
             <div
-              key={artist.id}
+              key={artist._id || artist.id || artist.slug}
               className="group flex flex-col bg-[#F4EFE6] border border-[#B89555]/20 hover:border-[#682C2C] rounded-sm overflow-hidden shadow-art hover:shadow-art-hover transition-all duration-300 p-5 justify-between"
             >
               <div>
                 {/* Portrait */}
                 <div className="relative aspect-square w-full rounded-sm overflow-hidden mb-4 bg-[#E9DFCD] border border-[#B89555]/30">
                   <img
-                    src={artist.avatar}
+                    src={getImageUrl(artist.avatar || artist.image)}
                     alt={artist.name}
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   />

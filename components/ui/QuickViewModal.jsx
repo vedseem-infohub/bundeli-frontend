@@ -172,14 +172,14 @@ export default function QuickViewModal() {
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#25D366] hover:bg-[#1ebe57] text-[#0C381E] text-xs uppercase tracking-widest font-bold transition-colors rounded-sm shadow-md cursor-pointer"
               >
                 <WhatsAppIcon className="w-4 h-4 text-[#0C381E]" />
-                <span>Artworks on WhatsApp</span>
+                <span>Connect on WhatsApp</span>
               </button>
 
               <button
                 onClick={() => toggleSelectArtwork(artwork)}
                 className={`p-3 border rounded-sm transition-colors ${selected
-                    ? "border-[#25D366] bg-[#25D366]/10 text-[#0C381E]"
-                    : "border-[#B89555]/40 hover:border-[#682C2C] text-[#292522]"
+                  ? "border-[#25D366] bg-[#25D366]/10 text-[#0C381E]"
+                  : "border-[#B89555]/40 hover:border-[#682C2C] text-[#292522]"
                   }`}
                 title={selected ? "Selected for commission" : "Select artwork"}
               >
@@ -189,8 +189,8 @@ export default function QuickViewModal() {
               <button
                 onClick={() => toggleWishlist(artwork)}
                 className={`p-3 border rounded-sm transition-colors ${inWish
-                    ? "border-[#682C2C] bg-[#682C2C]/10 text-[#682C2C]"
-                    : "border-[#B89555]/40 hover:border-[#682C2C] text-[#292522]"
+                  ? "border-[#682C2C] bg-[#682C2C]/10 text-[#682C2C]"
+                  : "border-[#B89555]/40 hover:border-[#682C2C] text-[#292522]"
                   }`}
                 aria-label="Wishlist toggle"
               >

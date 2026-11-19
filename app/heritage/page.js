@@ -64,10 +64,10 @@ export default function HeritagePage() {
               A Sanctuary for Living Traditions
             </h2>
             <p className="text-sm text-[#292522]/80 leading-relaxed font-light">
-              Bundeli Kalavrat was conceived in the shadow of Orchha's seventeenth-century Jahangir Mahal. Witnessing the exquisite frescoes of celestial assemblies and courtly rasas—and learning that the descendants of those court painters still live quietly in neighboring hamlets—we resolved to create a global stage for their mastery.
+              Bundeli Kalavrat was conceived in the shadow of Orchha&apos;s seventeenth-century Jahangir Mahal. Witnessing the exquisite frescoes of celestial assemblies and courtly rasas—and learning that the descendants of those court painters still live quietly in neighboring hamlets—we resolved to create a global stage for their mastery.
             </p>
             <p className="text-sm text-[#292522]/80 leading-relaxed font-light">
-              Too often, traditional Indian art has been categorized merely as souvenir craft. Bundeli Kalavrat restores these works to their rightful status as fine art masterpieces worthy of the world's finest private collections and international museums.
+              Too often, traditional Indian art has been categorized merely as souvenir craft. Bundeli Kalavrat restores these works to their rightful status as fine art masterpieces worthy of the world&apos;s finest private collections and international museums.
             </p>
           </div>
 
@@ -141,7 +141,7 @@ export default function HeritagePage() {
                 Preserving Master-Apprentice Knowledge
               </h3>
               <p className="text-xs sm:text-sm text-[#292522]/80 leading-relaxed font-light">
-                Traditional Indian art is not learned in university lecture halls; it is transmitted through *guru-shishya parampara*—decades of disciplined listening, grinding pigments, and observing the master's breath control while drawing microscopic lines.
+                Traditional Indian art is not learned in university lecture halls; it is transmitted through *guru-shishya parampara*—decades of disciplined listening, grinding pigments, and observing the master&apos;s breath control while drawing microscopic lines.
               </p>
               <p className="text-xs sm:text-sm text-[#292522]/80 leading-relaxed font-light">
                 We directly fund apprenticeship stipends for young artisans in Bundelkhand villages, making traditional art a viable and prestigious lifelong vocation for future generations.
@@ -153,10 +153,10 @@ export default function HeritagePage() {
                 OUR VISION
               </span>
               <h3 className="font-serif text-2xl font-bold text-[#292522]">
-                Heritage in the World's Living Spaces
+                Heritage in the World&apos;s Living Spaces
               </h3>
               <p className="text-xs sm:text-sm text-[#292522]/80 leading-relaxed font-light">
-                To position Bundelkhand art alongside Japanese ukiyo-e, Persian miniatures, and Italian Renaissance frescoes as one of humanity's pinnacle aesthetic achievements.
+                To position Bundelkhand art alongside Japanese ukiyo-e, Persian miniatures, and Italian Renaissance frescoes as one of humanity&apos;s pinnacle aesthetic achievements.
               </p>
               <div className="space-y-2 pt-2 text-xs">
                 <div className="flex items-center gap-2">
